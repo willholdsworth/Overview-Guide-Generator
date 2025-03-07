@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
+    <style>
+        body { font-family: Open Sans, sans-serif; margin: 0; padding: 20px; }
+        .container { width: calc(297mm - 40px); margin: 0 auto; }
+        textarea { width: 100%; height: 100px; margin-bottom: 20px; }
+        .a4-container { width: 100%; height: 210mm; border: 1px solid #000; padding: 20px; box-sizing: border-box; position: relative; }
+        .logo { width: 100px; position: absolute; top: 20px; left: 20px; }
+        .contact-info { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 8pt; }
+        #tableWrapper { position: absolute; top: 80px; left: 20px; right: 20px; bottom: 70px; display: flex; justify-content: center; overflow: hidden; }
+        table { width: 100%; height: 100%; border-collapse: collapse; margin: 0; table-layout: fixed; }
+        table, th, td { border: 1px solid black; text-align: center; } /* Center text in table */
+        th, td { padding: 2px; overflow: hidden; }
+        td:first-child, th { background-color: black; color: white; }
+        th a { color: white; }
+        td.specifications { background-color: black; color: white; text-transform: uppercase; }
+        td img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        tr:nth-child(odd) { background-color: white; }
+        .footer { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 8px; }
+        .styled-button { padding: 5px 5px; margin: 1px; background-color: black; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
+        .styled-button:active { background-color: grey; }
+        .toggle-button { padding: 5px 5px; margin: 1px; background-color: black; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
+        .toggle-button.active { background-color: grey; }
+        .button-container { margin-bottom: 20px; }
+		
+		td a {
+		color: inherit; /* Inherit text color */
+		text-decoration: underline; /* Ensure links are underlined */
+	}
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .a4-container, .a4-container * {
+                visibility: visible;
+            }
+            .a4-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                border: none;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PRODUCT OVERVIEW GUIDE GENERATOR</h1>
+        <textarea id="urlInput" placeholder="Paste URLs here, one per line">
+https://www.futureautomation.co.uk/Product/Details/PDR-RES
+https://www.futureautomation.co.uk/Product/Details/PDR-COM
+https://www.futureautomation.co.uk/Product/Details/PDR-BARCO
+https://www.futureautomation.co.uk/Product/Details/PDR-SONY
+https://www.futureautomation.co.uk/Product/Details/PDM
+https://www.futureautomation.co.uk/Product/Details/PDMO
+https://www.futureautomation.co.uk/Product/Details/PH</textarea>
+        <button id="generateButton" class='styled-button'>GENERATE PAGE ></button>
+		<button type="button" onclick="printPage()" class='styled-button'>EXPORT AS PDF</button>
+        <div class="button-container"></div>
+        <div class="a4-container" id="a4Container">
+            <img src="https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg" alt="Logo" class="logo">
+            <div class="contact-info">
+                <b>UK</b> 01438 833 577<br>
+                <b>USA</b> 603.742.9181<br>
+                info@futureautomation.net
+            </div>
+            <div id="tableWrapper">
+                <table id="infoTable">
+                    <thead><tr><th>SPECIFICATION</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="footer">
+                www.<b>FUTUREAUTOMATION</b>.net<br>
+                Future Sound and Vision Ltd. Registered in England. Company Number: 05124376.<br>
+                Registered Office: Unit 2 Kimpton Enterprise Park, Claggy Road, Kimpton, Herts, SG4 8HP
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
+    const delayBetweenRequests = 1000;
+    const allSpecifications = {};
+    const productDataList = [];
+    let previousUrls = [];
+    let toggleStates = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+        async function fetchHTML(url) {
+            try {
+                const response = await fetch(`${corsProxyAPI}${encodeURIComponent(url)}`);
+                const contentType = response.headers.get('Content-Type');
+                if (contentType.includes('application/json')) return (await response.json()).contents;
+                if (contentType.includes('text/html') || contentType.includes('text/plain')) return await response.text();
+                console.error(`Unexpected content type: ${contentType}`);
+                return '';
+            } catch (error) {
+                console.error('Error fetching HTML:', error);
+                return '';
+            }
+        }
+
+        function cleanTechnicalSpecificationTable(table) {
+            const rows = Array.from(table.querySelectorAll('tr'));
+            rows.forEach(row => {
+                const buttons = row.querySelectorAll('button');
+                if (buttons.length > 0) row.remove();
+                const cells = Array.from(row.cells);
+                cells.forEach(cell => {
+                    const images = cell.querySelectorAll('img');
+                    if (images.length > 0) {
+                        images.forEach(image => image.remove());
+                        const strongTags = cell.querySelectorAll('strong');
+                        strongTags.forEach(tag => tag.remove());
+                        if (cell.textContent.trim() === '') cell.remove();
+                    }
+                });
+            });
+            rows.forEach(row => {
+                const cells = Array.from(row.cells);
+                if (cells.some(cell => cell.textContent.trim() === '')) row.remove();
+            });
+        }
+
+        async function scrapeProductData(url) {
+            const html = await fetchHTML(url);
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const productName = doc.querySelector('#PageProductID')?.textContent.trim() || 'Unknown Product';
+            const productImage = doc.querySelector('img[src^="https://d2oo5quzpsdib.cloudfront.net/Website/Product/Main/"]')?.src || '';
+            const specifications = {};
+            const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
+            if (heading) {
+                const table = heading.nextElementSibling.querySelector('table');
+                if (table) {
+                    cleanTechnicalSpecificationTable(table);
+                    const rows = Array.from(table.querySelectorAll('tr'));
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td, th');
+                        if (cells.length > 1) {
+                            const key = cells[0].textContent.trim();
+                            let values;
+                            if (key.toLowerCase() === 'product code') {
+                                values = Array.from(cells).slice(1).map(cell => cell.textContent.trim());
+                            } else {
+                                values = [cells[cells.length - 1].textContent.trim()];
+                            }
+                            const baseProductName = productName.replace(/\d+$/, '');
+                            if (!specifications[baseProductName]) specifications[baseProductName] = {};
+                            specifications[baseProductName][key] = values;
+
+                            // Preserve links for specific types
+                            if (['TECH SHEET', 'SELL SHEET', 'CAD', 'TECH'].includes(key.toUpperCase())) {
+                                const links = Array.from(cells).slice(1).map(cell => {
+                                    const link = cell.querySelector('a');
+                                    return link ? link.outerHTML : cell.textContent.trim();
+                                });
+                                specifications[baseProductName][key] = links;
+                            }
+                        }
+                    });
+                }
+            }
+            return { productName, productImage, specifications };
+        }
+
+        async function updateTable() {
+            const urlInput = document.getElementById('urlInput').value;
+            const urls = urlInput.split('\n').filter(url => url.trim() !== '');
+            const newUrls = urls.filter(url => !previousUrls.includes(url));
+            const removedUrls = previousUrls.filter(url => !urls.includes(url));
+            previousUrls = urls;
+            const tbody = document.getElementById('infoTable').querySelector('tbody');
+            const thead = document.getElementById('infoTable').querySelector('thead tr');
+            const buttonContainer = document.querySelector('.button-container');
+            removedUrls.forEach(url => {
+                const productCode = url.split('/').pop();
+                const th = Array.from(thead.querySelectorAll('th')).find(th => th.textContent === productCode);
+                if (th) {
+                    const index = Array.from(thead.children).indexOf(th);
+                    thead.removeChild(th);
+                    Array.from(tbody.children).forEach(tr => {
+                        if (tr.children[index]) tr.removeChild(tr.children[index]);
+                    });
+                }
+                const buttons = Array.from(buttonContainer.querySelectorAll('button'));
+                buttons.forEach(button => {
+                    if (button.textContent.includes(productCode)) buttonContainer.removeChild(button);
+                });
+            });
+            for (const url of newUrls) {
+                let productData = productDataList.find(data => data.url === url);
+                if (!productData) {
+                    productData = await scrapeProductData(url);
+                    productData.url = url;
+                    productDataList.push(productData);
+                }
+                const productCode = url.split('/').pop();
+                const th = document.createElement('th');
+                const a = document.createElement('a');
+                a.href = url;
+                a.textContent = productCode;
+                th.appendChild(a);
+                thead.appendChild(th);
+            }
+            const allSpecs = new Set();
+            productDataList.forEach(productData => {
+                Object.keys(productData.specifications).forEach(baseProductName => {
+                    if (productData.specifications[baseProductName]) {
+                        Object.keys(productData.specifications[baseProductName]).forEach(spec => allSpecs.add(spec));
+                    }
+                });
+            });
+            allSpecs.forEach(spec => {
+                if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(spec.toUpperCase())) return;
+                let tr = Array.from(tbody.querySelectorAll('tr')).find(tr => tr.firstChild.textContent === spec);
+                if (!tr) {
+                    tr = document.createElement('tr');
+                    const tdSpec = document.createElement('td');
+                    tdSpec.textContent = spec;
+                    tr.appendChild(tdSpec);
+                    tbody.appendChild(tr);
+                    const button = document.createElement('button');
+                    button.textContent = `${spec}`;
+                    button.classList.add('toggle-button');
+                    button.onclick = () => {
+                        tr.style.display = tr.style.display === 'none' ? '' : 'none';
+                        button.classList.toggle('active');
+                    };
+                    buttonContainer.appendChild(button);
+                }
+                productDataList.forEach(productData => {
+					Object.keys(productData.specifications).forEach(baseProductName => {
+						if (productData.specifications[baseProductName]) {
+							let values = productData.specifications[baseProductName][spec] || [];
+							values = simplifySizes(values, spec); // Simplify if necessary
+							const tdValue = document.createElement('td');
+
+							// Check if the specification includes "COMPATIBLE"
+							if (spec.toUpperCase().includes('COMPATIBLE')) {
+								tdValue.textContent = values.join(', ') || 'N/A'; // Combine all values with commas
+							} else if (['TECH SHEET', 'SELL SHEET', 'CAD', 'TECH'].includes(spec.toUpperCase())) {
+								tdValue.innerHTML = values.join(', ') || 'N/A'; // Preserve HTML links
+							} else {
+								tdValue.textContent = values.join(', ') || 'N/A'; // Plain text values
+							}
+							tr.appendChild(tdValue);
+						}
+					});
+				});	
+            });
+
+            const imageRow = document.createElement('tr');
+            const imageCell = document.createElement('td');
+            imageCell.textContent = 'PRODUCT IMAGE';
+            imageRow.appendChild(imageCell);
+
+            productDataList.forEach(productData => {
+                const imgCell = document.createElement('td');
+                const img = document.createElement('img');
+                img.src = productData.productImage;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                imgCell.appendChild(img);
+                imageRow.appendChild(imgCell);
+            });
+
+            tbody.insertBefore(imageRow, tbody.firstChild);
+
+            const firstImageCell = imageRow.querySelector('td:nth-child(2)');
+            if (firstImageCell) {
+                const cellWidth = firstImageCell.offsetWidth;
+                imageRow.style.height = `${cellWidth}px`;
+                imageRow.querySelectorAll('td').forEach(cell => {
+                    cell.style.height = `${cellWidth}px`;
+                });
+            }
+
+            adjustTableSize();
+        }
+
+        function simplifySizes(values, spec) {
+			return values.map(value => {
+				// Check if the value contains an HTML link
+				if (value.includes('<a')) {
+					return value; // Preserve the link as-is
+				}
+				// Check if the specification includes "MAX" or "MAXIMUM"
+				if (spec.toUpperCase().includes('MAX') || spec.toUpperCase().includes('MAXIMUM')) {
+					// Apply simplification logic (extract the last part of comma-separated values)
+					return value.split(', ').pop().trim();
+				} else {
+					// Return the value as-is
+					return value;
+				}
+			});
+		}
+
+        function adjustTableSize() {
+            const tableWrapper = document.getElementById('tableWrapper');
+            const table = document.getElementById('infoTable');
+            if (!tableWrapper || !table) return;
+            table.style.width = "100%";
+            table.style.height = "100%";
+            table.style.transform = "scale(1)";
+            tableWrapper.style.display = "flex";
+            tableWrapper.style.justifyContent = "center";
+        }
+
+        document.getElementById('generateButton').addEventListener('click', updateTable);
+    });
+
+    function adjustFontSizeBasedOnTableContent() {
+        const table = document.getElementById('infoTable');
+        const tableWrapper = document.getElementById('tableWrapper');
+        if (!table || !tableWrapper) return;
+        const tableHeight = table.scrollHeight;
+        const wrapperHeight = tableWrapper.clientHeight;
+        const tableWidth = table.scrollWidth;
+        const wrapperWidth = tableWrapper.clientWidth;
+        const numRows = table.rows.length;
+        const numCols = table.rows[0] ? table.rows[0].cells.length : 0;
+        const maxFontSize = 12;
+        const minFontSize = 1;
+        let calculatedFontSize = Math.min(Math.floor((wrapperHeight / numRows) * 0.5), Math.floor((wrapperWidth / numCols) * 0.5));
+        if (tableHeight > wrapperHeight || tableWidth > wrapperWidth) calculatedFontSize *= 0.5;
+        calculatedFontSize = Math.max(minFontSize, Math.min(calculatedFontSize, maxFontSize));
+        const cells = table.querySelectorAll('th, td');
+        cells.forEach(cell => cell.style.fontSize = `${calculatedFontSize}px`);
+    }
+
+    function setupTableObserver() {
+        const table = document.getElementById('infoTable');
+        if (!table) return;
+        const observer = new MutationObserver(() => {
+            adjustFontSizeBasedOnTableContent();
+        });
+        observer.observe(table, { childList: true, subtree: true });
+    }
+
+    function printPage() {
+        window.print();
+    }
+
+    document.addEventListener('DOMContentLoaded', setupTableObserver);
+    document.getElementById('generateButton').addEventListener('click', () => {
+        adjustFontSizeBasedOnTableContent();
+    });
+</script>
+</body>
+</html>
