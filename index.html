@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
-    <style>
+<style>
         body { font-family: Open Sans, sans-serif; margin: 0; padding: 20px; }
         .container { width: calc(297mm - 40px); margin: 0 auto; }
         textarea { width: 100%; height: 100px; margin-bottom: 20px; }
@@ -96,13 +96,26 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
     let previousUrls = [];
     let toggleStates = {};
 
+    function printPage() {
+        window.print();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         async function fetchHTML(url) {
             try {
                 const response = await fetch(`${corsProxyAPI}${encodeURIComponent(url)}`);
                 const contentType = response.headers.get('Content-Type');
-                if (contentType.includes('application/json')) return (await response.json()).contents;
-                if (contentType.includes('text/html') || contentType.includes('text/plain')) return await response.text();
+                console.log('API Response Status:', response.status, 'Content-Type:', contentType);
+                if (contentType.includes('application/json')) {
+                    const json = await response.json();
+                    console.log('JSON Response:', json);
+                    return json.contents;
+                }
+                if (contentType.includes('text/html') || contentType.includes('text/plain')) {
+                    const text = await response.text();
+                    console.log('HTML/Text Response Length:', text.length);
+                    return text;
+                }
                 console.error(`Unexpected content type: ${contentType}`);
                 return '';
             } catch (error) {
@@ -123,56 +136,77 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
                         images.forEach(image => image.remove());
                         const strongTags = cell.querySelectorAll('strong');
                         strongTags.forEach(tag => tag.remove());
-                        if (cell.textContent.trim() === '') cell.remove();
+                        if (cell.textContent.trim() === '' && !cell.querySelector('a')) cell.remove();
                     }
                 });
             });
             rows.forEach(row => {
                 const cells = Array.from(row.cells);
-                if (cells.some(cell => cell.textContent.trim() === '')) row.remove();
+                if (cells.some(cell => cell.textContent.trim() === '' && !cell.querySelector('a'))) row.remove();
             });
         }
 
         async function scrapeProductData(url) {
             const html = await fetchHTML(url);
+            if (!html) {
+                console.error('No HTML returned for URL:', url);
+                return { productName: 'Unknown Product', productImage: '', specifications: {} };
+            }
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const productName = doc.querySelector('#PageProductID')?.textContent.trim() || 'Unknown Product';
             const productImage = doc.querySelector('img[src^="https://d2oo5quzpsdib.cloudfront.net/Website/Product/Main/"]')?.src || '';
             const specifications = {};
             const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
-            if (heading) {
+            
+            console.log('Product Name:', productName, 'Image:', productImage);
+            console.log('Technical Specification Heading Found:', !!heading);
+
+            if (heading && heading.nextElementSibling) {
                 const table = heading.nextElementSibling.querySelector('table');
                 if (table) {
                     cleanTechnicalSpecificationTable(table);
                     const rows = Array.from(table.querySelectorAll('tr'));
+                    console.log('Table Rows Found:', rows.length);
                     rows.forEach(row => {
                         const cells = row.querySelectorAll('td, th');
                         if (cells.length > 1) {
                             const key = cells[0].textContent.trim();
                             let values;
-                            if (key.toLowerCase() === 'product code') {
-                                values = Array.from(cells).slice(1).map(cell => cell.textContent.trim());
+                            const keyUpper = key.toUpperCase();
+                            if (keyUpper.includes('MAX') || keyUpper.includes('MAX.') || keyUpper.includes('MAXIMUM') ||
+                                keyUpper.includes('SHIPPING') || keyUpper.includes('SHIP') || keyUpper.includes('WEIGHT')) {
+                                values = [cells[cells.length - 1].innerHTML];
                             } else {
-                                values = [cells[cells.length - 1].textContent.trim()];
+                                values = Array.from(cells).slice(1).map(cell => cell.innerHTML);
                             }
                             const baseProductName = productName.replace(/\d+$/, '');
                             if (!specifications[baseProductName]) specifications[baseProductName] = {};
                             specifications[baseProductName][key] = values;
-
-                            // Preserve links for specific types
-                            if (['TECH SHEET', 'SELL SHEET', 'CAD', 'TECH'].includes(key.toUpperCase())) {
-                                const links = Array.from(cells).slice(1).map(cell => {
-                                    const link = cell.querySelector('a');
-                                    return link ? link.outerHTML : cell.textContent.trim();
-                                });
-                                specifications[baseProductName][key] = links;
-                            }
                         }
                     });
+                } else {
+                    console.warn('No table found under TECHNICAL SPECIFICATION heading');
                 }
             }
+            console.log('Specifications:', specifications);
             return { productName, productImage, specifications };
+        }
+
+        function simplifySizes(values, spec) {
+            const specUpper = spec.toUpperCase();
+            return values.map(value => {
+                if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) {
+                    return value;
+                }
+                if (specUpper.includes('MAX') || specUpper.includes('MAXIMUM')) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = value;
+                    const text = tempDiv.textContent.trim();
+                    return text.split(', ').pop().trim();
+                }
+                return value;
+            });
         }
 
         async function updateTable() {
@@ -184,6 +218,7 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
             const tbody = document.getElementById('infoTable').querySelector('tbody');
             const thead = document.getElementById('infoTable').querySelector('thead tr');
             const buttonContainer = document.querySelector('.button-container');
+
             removedUrls.forEach(url => {
                 const productCode = url.split('/').pop();
                 const th = Array.from(thead.querySelectorAll('th')).find(th => th.textContent === productCode);
@@ -199,6 +234,7 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
                     if (button.textContent.includes(productCode)) buttonContainer.removeChild(button);
                 });
             });
+
             for (const url of newUrls) {
                 let productData = productDataList.find(data => data.url === url);
                 if (!productData) {
@@ -214,6 +250,7 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
                 th.appendChild(a);
                 thead.appendChild(th);
             }
+
             const allSpecs = new Set();
             productDataList.forEach(productData => {
                 Object.keys(productData.specifications).forEach(baseProductName => {
@@ -222,6 +259,7 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
                     }
                 });
             });
+
             allSpecs.forEach(spec => {
                 if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(spec.toUpperCase())) return;
                 let tr = Array.from(tbody.querySelectorAll('tr')).find(tr => tr.firstChild.textContent === spec);
@@ -237,28 +275,35 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
                     button.onclick = () => {
                         tr.style.display = tr.style.display === 'none' ? '' : 'none';
                         button.classList.toggle('active');
+                        adjustFontSizeBasedOnTableContent(); 
                     };
                     buttonContainer.appendChild(button);
                 }
+                
                 productDataList.forEach(productData => {
-					Object.keys(productData.specifications).forEach(baseProductName => {
-						if (productData.specifications[baseProductName]) {
-							let values = productData.specifications[baseProductName][spec] || [];
-							values = simplifySizes(values, spec); // Simplify if necessary
-							const tdValue = document.createElement('td');
-
-							// Check if the specification includes "COMPATIBLE"
-							if (spec.toUpperCase().includes('COMPATIBLE')) {
-								tdValue.textContent = values.join(', ') || 'N/A'; // Combine all values with commas
-							} else if (['TECH SHEET', 'SELL SHEET', 'CAD', 'TECH'].includes(spec.toUpperCase())) {
-								tdValue.innerHTML = values.join(', ') || 'N/A'; // Preserve HTML links
-							} else {
-								tdValue.textContent = values.join(', ') || 'N/A'; // Plain text values
-							}
-							tr.appendChild(tdValue);
-						}
-					});
-				});	
+                    Object.keys(productData.specifications).forEach(baseProductName => {
+                        if (productData.specifications[baseProductName]) {
+                            let values = productData.specifications[baseProductName][spec] || [];
+                            values = simplifySizes(values, spec);
+                            const tdValue = document.createElement('td');
+                            const specUpper = spec.toUpperCase();
+                            let uniqueValues = values;
+                            if (spec.toLowerCase() !== 'product code') {
+                                uniqueValues = [...new Set(values)];
+                            }
+                            if (uniqueValues.length > 0) {
+                                if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) {
+                                    tdValue.innerHTML = uniqueValues.join(' ');
+                                } else {
+                                    tdValue.innerHTML = uniqueValues.join(' ');
+                                }
+                            } else {
+                                tdValue.innerHTML = 'N/A';
+                            }
+                            tr.appendChild(tdValue);
+                        }
+                    });
+                });
             });
 
             const imageRow = document.createElement('tr');
@@ -287,75 +332,83 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
                 });
             }
 
-            adjustTableSize();
-        }
-
-        function simplifySizes(values, spec) {
-			return values.map(value => {
-				// Check if the value contains an HTML link
-				if (value.includes('<a')) {
-					return value; // Preserve the link as-is
-				}
-				// Check if the specification includes "MAX" or "MAXIMUM"
-				if (spec.toUpperCase().includes('MAX') || spec.toUpperCase().includes('MAXIMUM')) {
-					// Apply simplification logic (extract the last part of comma-separated values)
-					return value.split(', ').pop().trim();
-				} else {
-					// Return the value as-is
-					return value;
-				}
-			});
-		}
-
-        function adjustTableSize() {
-            const tableWrapper = document.getElementById('tableWrapper');
-            const table = document.getElementById('infoTable');
-            if (!tableWrapper || !table) return;
-            table.style.width = "100%";
-            table.style.height = "100%";
-            table.style.transform = "scale(1)";
-            tableWrapper.style.display = "flex";
-            tableWrapper.style.justifyContent = "center";
-        }
-
-        document.getElementById('generateButton').addEventListener('click', updateTable);
-    });
-
-    function adjustFontSizeBasedOnTableContent() {
-        const table = document.getElementById('infoTable');
-        const tableWrapper = document.getElementById('tableWrapper');
-        if (!table || !tableWrapper) return;
-        const tableHeight = table.scrollHeight;
-        const wrapperHeight = tableWrapper.clientHeight;
-        const tableWidth = table.scrollWidth;
-        const wrapperWidth = tableWrapper.clientWidth;
-        const numRows = table.rows.length;
-        const numCols = table.rows[0] ? table.rows[0].cells.length : 0;
-        const maxFontSize = 12;
-        const minFontSize = 1;
-        let calculatedFontSize = Math.min(Math.floor((wrapperHeight / numRows) * 0.5), Math.floor((wrapperWidth / numCols) * 0.5));
-        if (tableHeight > wrapperHeight || tableWidth > wrapperWidth) calculatedFontSize *= 0.5;
-        calculatedFontSize = Math.max(minFontSize, Math.min(calculatedFontSize, maxFontSize));
-        const cells = table.querySelectorAll('th, td');
-        cells.forEach(cell => cell.style.fontSize = `${calculatedFontSize}px`);
-    }
-
-    function setupTableObserver() {
-        const table = document.getElementById('infoTable');
-        if (!table) return;
-        const observer = new MutationObserver(() => {
             adjustFontSizeBasedOnTableContent();
+        }
+
+        function adjustFontSizeBasedOnTableContent() {
+            const table = document.getElementById('infoTable');
+            const tableWrapper = document.getElementById('tableWrapper');
+            if (!table || !tableWrapper) return;
+
+            const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+            if (visibleRows.length === 0) return;
+
+            const cells = table.querySelectorAll('th, td');
+            const maxFontSize = 12;
+            const minFontSize = 2;
+            let optimalFontSize = maxFontSize;
+
+            cells.forEach(cell => cell.style.fontSize = '');
+
+            visibleRows.forEach(row => {
+                const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
+                    const style = window.getComputedStyle(cell);
+                    return style.display !== 'none' && style.visibility !== 'hidden';
+                });
+
+                visibleCells.forEach(cell => {
+                    const computedStyle = window.getComputedStyle(cell);
+                    const paddingTop = parseFloat(computedStyle.paddingTop);
+                    const paddingBottom = parseFloat(computedStyle.paddingBottom);
+                    const paddingLeft = parseFloat(computedStyle.paddingLeft);
+                    const paddingRight = parseFloat(computedStyle.paddingRight);
+                    const cellHeight = cell.clientHeight - paddingTop - paddingBottom;
+                    const cellWidth = cell.clientWidth - paddingLeft - paddingRight;
+
+                    if (cellHeight <= 0 || cellWidth <= 0 || !cell.textContent.trim()) return;
+
+                    cell.style.fontSize = `${maxFontSize}px`;
+                    const textHeight = cell.scrollHeight;
+                    const textWidth = cell.scrollWidth;
+
+                    const heightRatio = cellHeight / textHeight;
+                    const widthRatio = cellWidth / textWidth;
+                    const scaleFactor = Math.min(heightRatio, widthRatio);
+
+                    let cellMaxFontSize = Math.floor(maxFontSize * scaleFactor);
+                    cellMaxFontSize = Math.max(minFontSize, Math.min(cellMaxFontSize, maxFontSize));
+
+                    optimalFontSize = Math.min(optimalFontSize, cellMaxFontSize);
+                });
+            });
+
+            cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
+
+            const visibleTableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
+            const wrapperHeight = tableWrapper.clientHeight;
+            if (visibleTableHeight > wrapperHeight) {
+                const heightRatio = wrapperHeight / visibleTableHeight;
+                optimalFontSize = Math.floor(optimalFontSize * heightRatio);
+                optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
+                cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
+            }
+
+            console.log(`Optimal Font Size: ${optimalFontSize}px, Visible Table Height: ${visibleTableHeight}, Wrapper Height: ${wrapperHeight}`);
+        }
+
+        function setupTableObserver() {
+            const table = document.getElementById('infoTable');
+            if (!table) return;
+            const observer = new MutationObserver(() => {
+                adjustFontSizeBasedOnTableContent();
+            });
+            observer.observe(table, { childList: true, subtree: true });
+        }
+
+        document.addEventListener('DOMContentLoaded', setupTableObserver);
+        document.getElementById('generateButton').addEventListener('click', () => {
+            updateTable();
         });
-        observer.observe(table, { childList: true, subtree: true });
-    }
-
-    function printPage() {
-        window.print();
-    }
-
-    document.addEventListener('DOMContentLoaded', setupTableObserver);
-    document.getElementById('generateButton').addEventListener('click', () => {
-        adjustFontSizeBasedOnTableContent();
     });
 </script>
 </body>
