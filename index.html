@@ -4,70 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
-<style>
-        body { font-family: Open Sans, sans-serif; margin: 0; padding: 20px; }
-        .container { width: calc(297mm - 40px); margin: 0 auto; }
-        textarea { width: 100%; height: 100px; margin-bottom: 20px; }
-        .a4-container { width: 100%; height: 210mm; border: 1px solid #000; padding: 20px; box-sizing: border-box; position: relative; }
-        .logo { width: 100px; position: absolute; top: 20px; left: 20px; }
-        .contact-info { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 8pt; }
-        #tableWrapper { position: absolute; top: 80px; left: 20px; right: 20px; bottom: 70px; display: flex; justify-content: center; overflow: hidden; }
-        table { width: 100%; height: 100%; border-collapse: collapse; margin: 0; table-layout: fixed; }
-        table, th, td { border: 1px solid black; text-align: center; } /* Center text in table */
-        th, td { padding: 2px; overflow: hidden; }
-        td:first-child, th { background-color: black; color: white; }
-        th a { color: white; }
-        td.specifications { background-color: black; color: white; text-transform: uppercase; }
-        td img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        tr:nth-child(odd) { background-color: white; }
-        .footer { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 8px; }
-        .styled-button { padding: 5px 5px; margin: 1px; background-color: black; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
-        .styled-button:active { background-color: grey; }
-        .toggle-button { padding: 5px 5px; margin: 1px; background-color: black; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
-        .toggle-button.active { background-color: grey; }
-        .button-container { margin-bottom: 20px; }
-		
-		td a {
-		color: inherit; /* Inherit text color */
-		text-decoration: underline; /* Ensure links are underlined */
-	}
-
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            .a4-container, .a4-container * {
-                visibility: visible;
-            }
-            .a4-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-                border: none;
-            }
-    </style>
+	<style>
+		body { font-family: Open Sans, sans-serif; margin: 0; padding: 20px; }
+		.container { width: calc(297mm - 40px); margin: 0 auto; }
+		textarea { width: 100%; height: 100px; margin-bottom: 20px; }
+		.a4-container { width: 100%; height: 210mm; border: 1px solid #000; padding: 20px; box-sizing: border-box; position: relative; }
+		.logo { width: 100px; position: absolute; top: 20px; left: 20px; }
+		.title { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap; font-weight: bold; letter-spacing: 0.05rem;}
+		.contact-info { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 8pt; }
+		#tableWrapper { position: absolute; top: 80px; left: 20px; right: 20px; bottom: 70px; display: flex; justify-content: center; overflow: hidden; border-top: 1px solid black; border-bottom: 1px solid black; }
+		table { width: 100%; height: 100%; border-collapse: collapse; margin: 0; table-layout: fixed; }
+		table, th, td { border-right: 1px solid black; text-align: center; }
+		th, td { padding: 2px; overflow: hidden; }
+		th:last-child, td:last-child { border-right: none; } 
+		td:first-child, th { background-color: black; color: white; }
+		th a { color: white; }
+		td.specifications { background-color: black; color: white; text-transform: uppercase; }
+		td img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+		tr:nth-child(even) { background-color: #f2f2f2; }
+		tr:nth-child(odd) { background-color: white; }
+		.group-row th { background-color: #707070; color: white; }
+		.group-row th:first-child { background-color: black; color: white; }
+		.footer { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 8px; }
+		.styled-button { padding: 5px 5px; margin: 1px; background-color: green; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
+		.styled-button:active { background-color: grey; }
+		.toggle-button { padding: 5px 5px; margin: 1px; background-color: #303030; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
+		.toggle-button.active { background-color: lightgrey; color: black; }
+		.button-container { margin-bottom: 20px; }
+		td a { color: inherit; text-decoration: underline; }
+		@media print {
+			body * { visibility: hidden; }
+			.a4-container, .a4-container * { visibility: visible; }
+			.a4-container { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: none; }
+		}
+	</style>
 </head>
 <body>
     <div class="container">
         <h1>PRODUCT OVERVIEW GUIDE GENERATOR</h1>
         <textarea id="urlInput" placeholder="Paste URLs here, one per line">
-https://www.futureautomation.co.uk/Product/Details/PDR-RES
-https://www.futureautomation.co.uk/Product/Details/PDR-COM
-https://www.futureautomation.co.uk/Product/Details/PDR-BARCO
-https://www.futureautomation.co.uk/Product/Details/PDR-SONY
-https://www.futureautomation.co.uk/Product/Details/PDM
-https://www.futureautomation.co.uk/Product/Details/PDMO
-https://www.futureautomation.co.uk/Product/Details/PH</textarea>
+TITLE - CEILING HINGE GUIDE
+GROUP - INDOOR RESIDENTIAL
+https://www.futureautomation.co.uk/Product/Details/CHR
+https://www.futureautomation.co.uk/Product/Details/CHRS
+https://www.futureautomation.co.uk/Product/Details/CHRT
+https://www.futureautomation.co.uk/Product/Details/CHRST
+GROUP - INDOOR MARINE
+https://www.futureautomation.co.uk/Product/Details/CHR-M
+https://www.futureautomation.co.uk/Product/Details/CHRS-M
+https://www.futureautomation.co.uk/Product/Details/CHR-C-M
+https://www.futureautomation.co.uk/Product/Details/CHR-M-DDP
+https://www.futureautomation.co.uk/Product/Details/CHRS-M-DDP
+GROUP - OUTDOOR MARINE
+https://www.futureautomation.co.uk/Product/Details/CHR-MO
+https://www.futureautomation.co.uk/Product/Details/CHR-MO-DDP
+https://www.futureautomation.co.uk/Product/Details/CHRS-MO
+https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
+        </textarea>
         <button id="generateButton" class='styled-button'>GENERATE PAGE ></button>
-		<button type="button" onclick="printPage()" class='styled-button'>EXPORT AS PDF</button>
+        <button type="button" onclick="printPage()" class='styled-button'>EXPORT AS PDF</button>
         <div class="button-container"></div>
         <div class="a4-container" id="a4Container">
             <img src="https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg" alt="Logo" class="logo">
+            <div class="title" id="pageTitle"></div>
             <div class="contact-info">
                 <b>UK</b> 01438 833 577<br>
                 <b>USA</b> 603.742.9181<br>
@@ -86,330 +85,335 @@ https://www.futureautomation.co.uk/Product/Details/PH</textarea>
             </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-    const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
-    const delayBetweenRequests = 1000;
-    const allSpecifications = {};
-    const productDataList = [];
-    let previousUrls = [];
-    let toggleStates = {};
+    <script>
+const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
+const delayBetweenRequests = 1000;
+const allSpecifications = {};
+const productDataList = [];
+let previousUrls = [];
+let toggleStates = {};
 
-    function printPage() {
-        window.print();
+function printPage() {
+    window.print();
+}
+
+async function fetchHTML(url) {
+    try {
+        const response = await fetch(`${corsProxyAPI}${encodeURIComponent(url)}`);
+        const contentType = response.headers.get('Content-Type');
+        if (contentType.includes('application/json')) {
+            return (await response.json()).contents;
+        }
+        if (contentType.includes('text/html') || contentType.includes('text/plain')) {
+            return await response.text();
+        }
+        return '';
+    } catch (error) {
+        return '';
     }
+}
 
-    document.addEventListener('DOMContentLoaded', () => {
-        async function fetchHTML(url) {
-            try {
-                const response = await fetch(`${corsProxyAPI}${encodeURIComponent(url)}`);
-                const contentType = response.headers.get('Content-Type');
-                console.log('API Response Status:', response.status, 'Content-Type:', contentType);
-                if (contentType.includes('application/json')) {
-                    const json = await response.json();
-                    console.log('JSON Response:', json);
-                    return json.contents;
-                }
-                if (contentType.includes('text/html') || contentType.includes('text/plain')) {
-                    const text = await response.text();
-                    console.log('HTML/Text Response Length:', text.length);
-                    return text;
-                }
-                console.error(`Unexpected content type: ${contentType}`);
-                return '';
-            } catch (error) {
-                console.error('Error fetching HTML:', error);
-                return '';
+function cleanTechnicalSpecificationTable(table) {
+    Array.from(table.querySelectorAll('tr')).forEach(row => {
+        if (row.querySelectorAll('button').length > 0) row.remove();
+        Array.from(row.cells).forEach(cell => {
+            const images = cell.querySelectorAll('img');
+            if (images.length > 0) {
+                images.forEach(image => image.remove());
+                cell.querySelectorAll('strong').forEach(tag => tag.remove());
+                if (cell.textContent.trim() === '' && !cell.querySelector('a')) cell.remove();
             }
-        }
+        });
+        if (Array.from(row.cells).some(cell => cell.textContent.trim() === '' && !cell.querySelector('a'))) row.remove();
+    });
+}
 
-        function cleanTechnicalSpecificationTable(table) {
-            const rows = Array.from(table.querySelectorAll('tr'));
-            rows.forEach(row => {
-                const buttons = row.querySelectorAll('button');
-                if (buttons.length > 0) row.remove();
-                const cells = Array.from(row.cells);
-                cells.forEach(cell => {
-                    const images = cell.querySelectorAll('img');
-                    if (images.length > 0) {
-                        images.forEach(image => image.remove());
-                        const strongTags = cell.querySelectorAll('strong');
-                        strongTags.forEach(tag => tag.remove());
-                        if (cell.textContent.trim() === '' && !cell.querySelector('a')) cell.remove();
+async function scrapeProductData(url) {
+    const html = await fetchHTML(url);
+    if (!html) return { productName: 'Unknown Product', productImage: '', specifications: {} };
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const productName = doc.querySelector('#PageProductID')?.textContent.trim() || 'Unknown Product';
+    const productImage = doc.querySelector('img[src^="https://d2oo5quzpsdib.cloudfront.net/Website/Product/Main/"]')?.src || '';
+    const specifications = {};
+    const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
+    if (heading && heading.nextElementSibling) {
+        const table = heading.nextElementSibling.querySelector('table');
+        if (table) {
+            cleanTechnicalSpecificationTable(table);
+            Array.from(table.querySelectorAll('tr')).forEach(row => {
+                const cells = row.querySelectorAll('td, th');
+                if (cells.length > 1) {
+                    const key = cells[0].textContent.trim();
+                    let values;
+                    const keyUpper = key.toUpperCase();
+                    if (keyUpper.includes('MAX') || keyUpper.includes('MAX.') || keyUpper.includes('MAXIMUM') || 
+                        keyUpper.includes('SHIPPING') || keyUpper.includes('SHIP') || keyUpper.includes('WEIGHT')) {
+                        values = [cells[cells.length - 1].innerHTML];
+                    } else {
+                        values = Array.from(cells).slice(1).map(cell => cell.innerHTML);
                     }
-                });
-            });
-            rows.forEach(row => {
-                const cells = Array.from(row.cells);
-                if (cells.some(cell => cell.textContent.trim() === '' && !cell.querySelector('a'))) row.remove();
+                    const baseProductName = productName.replace(/\d+$/, '');
+                    if (!specifications[baseProductName]) specifications[baseProductName] = {};
+                    specifications[baseProductName][key] = values;
+                }
             });
         }
+    }
+    return { productName, productImage, specifications };
+}
 
-        async function scrapeProductData(url) {
-            const html = await fetchHTML(url);
-            if (!html) {
-                console.error('No HTML returned for URL:', url);
-                return { productName: 'Unknown Product', productImage: '', specifications: {} };
+function simplifySizes(values, spec) {
+    const specUpper = spec.toUpperCase();
+    return values.map(value => {
+        if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) return value;
+        if (specUpper.includes('MAX') || specUpper.includes('MAXIMUM')) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = value;
+            return tempDiv.textContent.trim().split(', ').pop().trim();
+        }
+        return value;
+    });
+}
+
+function adjustTitleFontSize(titleElement, text) {
+    const minFontSize = 12;
+    const maxFontSize = 20;
+    const baseLength = 20;
+    const scaleFactor = Math.min(1, baseLength / text.length);
+    const fontSize = minFontSize + (maxFontSize - minFontSize) * scaleFactor;
+    titleElement.style.fontSize = `${fontSize}pt`;
+}
+
+async function updateTable() {
+    const urlInput = document.getElementById('urlInput').value;
+    const lines = urlInput.split('\n').map(line => line.trim()).filter(line => line !== '');
+    let title = '';
+    const groups = [];
+    let currentGroup = null;
+    const urls = [];
+    lines.forEach(line => {
+        if (line.startsWith('TITLE - ')) {
+            title = line.replace('TITLE - ', '').trim();
+        } else if (line.startsWith('GROUP - ')) {
+            if (currentGroup) groups.push(currentGroup);
+            currentGroup = { name: line.replace('GROUP - ', '').trim(), urls: [] };
+        } else if (line.startsWith('http')) {
+            if (currentGroup) currentGroup.urls.push(line);
+            else urls.push(line);
+        }
+    });
+    if (currentGroup) groups.push(currentGroup);
+    const effectiveUrls = groups.length > 0 ? groups.flatMap(g => g.urls) : urls;
+    const newUrls = effectiveUrls.filter(url => !previousUrls.includes(url));
+    const removedUrls = previousUrls.filter(url => !effectiveUrls.includes(url));
+    previousUrls = effectiveUrls;
+    const tbody = document.getElementById('infoTable').querySelector('tbody');
+    const thead = document.getElementById('infoTable').querySelector('thead');
+    const buttonContainer = document.querySelector('.button-container');
+    const titleElement = document.getElementById('pageTitle');
+    tbody.innerHTML = '';
+    thead.innerHTML = '<tr><th>SPECIFICATION</th></tr>';
+    buttonContainer.innerHTML = '';
+    titleElement.textContent = title;
+    if (title) adjustTitleFontSize(titleElement, title);
+    else titleElement.style.fontSize = '';
+    removedUrls.forEach(url => {
+        const productCode = url.split('/').pop();
+        const th = Array.from(thead.querySelectorAll('th')).find(th => th.textContent === productCode);
+        if (th) {
+            const index = Array.from(thead.children[0].children).indexOf(th);
+            thead.children[0].removeChild(th);
+            Array.from(tbody.children).forEach(tr => tr.children[index] && tr.removeChild(tr.children[index]));
+        }
+    });
+    for (const url of newUrls) {
+        let productData = productDataList.find(data => data.url === url);
+        if (!productData) {
+            productData = await scrapeProductData(url);
+            productData.url = url;
+            productDataList.push(productData);
+        }
+        const productCode = url.split('/').pop();
+        const th = document.createElement('th');
+        const a = document.createElement('a');
+        a.href = url;
+        a.textContent = productCode;
+        th.appendChild(a);
+        thead.children[0].appendChild(th);
+    }
+    if (groups.length > 0) {
+        const groupRow = document.createElement('tr');
+        groupRow.classList.add('group-row');
+        const emptyTh = document.createElement('th');
+        groupRow.appendChild(emptyTh);
+        groups.forEach(group => {
+            const th = document.createElement('th');
+            th.textContent = group.name;
+            th.colSpan = group.urls.length;
+            groupRow.appendChild(th);
+        });
+        thead.insertBefore(groupRow, thead.children[0]);
+
+        // Add borders to the left and right of each group column
+        const groupIndices = [];
+        groupRow.querySelectorAll('th').forEach((th, index) => {
+            const colspan = parseInt(th.getAttribute('colspan'), 10) || 1;
+            for (let i = 0; i < colspan; i++) {
+                groupIndices.push(index + i);
             }
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const productName = doc.querySelector('#PageProductID')?.textContent.trim() || 'Unknown Product';
-            const productImage = doc.querySelector('img[src^="https://d2oo5quzpsdib.cloudfront.net/Website/Product/Main/"]')?.src || '';
-            const specifications = {};
-            const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
-            
-            console.log('Product Name:', productName, 'Image:', productImage);
-            console.log('Technical Specification Heading Found:', !!heading);
+        });
 
-            if (heading && heading.nextElementSibling) {
-                const table = heading.nextElementSibling.querySelector('table');
-                if (table) {
-                    cleanTechnicalSpecificationTable(table);
-                    const rows = Array.from(table.querySelectorAll('tr'));
-                    console.log('Table Rows Found:', rows.length);
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td, th');
-                        if (cells.length > 1) {
-                            const key = cells[0].textContent.trim();
-                            let values;
-                            const keyUpper = key.toUpperCase();
-                            if (keyUpper.includes('MAX') || keyUpper.includes('MAX.') || keyUpper.includes('MAXIMUM') ||
-                                keyUpper.includes('SHIPPING') || keyUpper.includes('SHIP') || keyUpper.includes('WEIGHT')) {
-                                values = [cells[cells.length - 1].innerHTML];
-                            } else {
-                                values = Array.from(cells).slice(1).map(cell => cell.innerHTML);
-                            }
-                            const baseProductName = productName.replace(/\d+$/, '');
-                            if (!specifications[baseProductName]) specifications[baseProductName] = {};
-                            specifications[baseProductName][key] = values;
-                        }
-                    });
-                } else {
-                    console.warn('No table found under TECHNICAL SPECIFICATION heading');
+        tbody.querySelectorAll('tr').forEach(tr => {
+            groupIndices.forEach(idx => {
+                if (idx < tr.children.length) {
+                    tr.children[idx].style.borderLeft = '1px solid black';
+                    tr.children[idx].style.borderRight = '1px solid black';
                 }
+            });
+        });
+    }
+    const imageRow = document.createElement('tr');
+    const imageCell = document.createElement('td');
+    imageCell.textContent = 'PRODUCT IMAGE';
+    imageRow.appendChild(imageCell);
+    productDataList.forEach(productData => {
+        const imgCell = document.createElement('td');
+        const img = document.createElement('img');
+        img.src = productData.productImage;
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        imgCell.appendChild(img);
+        imageRow.appendChild(imgCell);
+    });
+    tbody.appendChild(imageRow);
+    const firstImageCell = imageRow.querySelector('td:nth-child(2)');
+    if (firstImageCell) {
+        const cellWidth = firstImageCell.offsetWidth;
+        imageRow.style.height = `${cellWidth}px`;
+        imageRow.querySelectorAll('td').forEach(cell => cell.style.height = `${cellWidth}px`);
+    }
+    const allSpecs = new Set();
+    productDataList.forEach(productData => {
+        Object.keys(productData.specifications).forEach(baseProductName => {
+            if (productData.specifications[baseProductName]) {
+                Object.keys(productData.specifications[baseProductName]).forEach(spec => allSpecs.add(spec));
             }
-            console.log('Specifications:', specifications);
-            return { productName, productImage, specifications };
-        }
-
-        function simplifySizes(values, spec) {
-            const specUpper = spec.toUpperCase();
-            return values.map(value => {
-                if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) {
-                    return value;
-                }
-                if (specUpper.includes('MAX') || specUpper.includes('MAXIMUM')) {
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = value;
-                    const text = tempDiv.textContent.trim();
-                    return text.split(', ').pop().trim();
-                }
-                return value;
-            });
-        }
-
-        async function updateTable() {
-            const urlInput = document.getElementById('urlInput').value;
-            const urls = urlInput.split('\n').filter(url => url.trim() !== '');
-            const newUrls = urls.filter(url => !previousUrls.includes(url));
-            const removedUrls = previousUrls.filter(url => !urls.includes(url));
-            previousUrls = urls;
-            const tbody = document.getElementById('infoTable').querySelector('tbody');
-            const thead = document.getElementById('infoTable').querySelector('thead tr');
-            const buttonContainer = document.querySelector('.button-container');
-
-            removedUrls.forEach(url => {
-                const productCode = url.split('/').pop();
-                const th = Array.from(thead.querySelectorAll('th')).find(th => th.textContent === productCode);
-                if (th) {
-                    const index = Array.from(thead.children).indexOf(th);
-                    thead.removeChild(th);
-                    Array.from(tbody.children).forEach(tr => {
-                        if (tr.children[index]) tr.removeChild(tr.children[index]);
-                    });
-                }
-                const buttons = Array.from(buttonContainer.querySelectorAll('button'));
-                buttons.forEach(button => {
-                    if (button.textContent.includes(productCode)) buttonContainer.removeChild(button);
-                });
-            });
-
-            for (const url of newUrls) {
-                let productData = productDataList.find(data => data.url === url);
-                if (!productData) {
-                    productData = await scrapeProductData(url);
-                    productData.url = url;
-                    productDataList.push(productData);
-                }
-                const productCode = url.split('/').pop();
-                const th = document.createElement('th');
-                const a = document.createElement('a');
-                a.href = url;
-                a.textContent = productCode;
-                th.appendChild(a);
-                thead.appendChild(th);
-            }
-
-            const allSpecs = new Set();
-            productDataList.forEach(productData => {
-                Object.keys(productData.specifications).forEach(baseProductName => {
-                    if (productData.specifications[baseProductName]) {
-                        Object.keys(productData.specifications[baseProductName]).forEach(spec => allSpecs.add(spec));
-                    }
-                });
-            });
-
-            allSpecs.forEach(spec => {
-                if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(spec.toUpperCase())) return;
-                let tr = Array.from(tbody.querySelectorAll('tr')).find(tr => tr.firstChild.textContent === spec);
-                if (!tr) {
-                    tr = document.createElement('tr');
-                    const tdSpec = document.createElement('td');
-                    tdSpec.textContent = spec;
-                    tr.appendChild(tdSpec);
-                    tbody.appendChild(tr);
-                    const button = document.createElement('button');
-                    button.textContent = `${spec}`;
-                    button.classList.add('toggle-button');
-                    button.onclick = () => {
-                        tr.style.display = tr.style.display === 'none' ? '' : 'none';
-                        button.classList.toggle('active');
-                        adjustFontSizeBasedOnTableContent(); 
-                    };
-                    buttonContainer.appendChild(button);
-                }
-                
-                productDataList.forEach(productData => {
-                    Object.keys(productData.specifications).forEach(baseProductName => {
-                        if (productData.specifications[baseProductName]) {
-                            let values = productData.specifications[baseProductName][spec] || [];
-                            values = simplifySizes(values, spec);
-                            const tdValue = document.createElement('td');
-                            const specUpper = spec.toUpperCase();
-                            let uniqueValues = values;
-                            if (spec.toLowerCase() !== 'product code') {
-                                uniqueValues = [...new Set(values)];
-                            }
-                            if (uniqueValues.length > 0) {
-                                if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) {
-                                    tdValue.innerHTML = uniqueValues.join(' ');
-                                } else {
-                                    tdValue.innerHTML = uniqueValues.join(' ');
-                                }
-                            } else {
-                                tdValue.innerHTML = 'N/A';
-                            }
-                            tr.appendChild(tdValue);
-                        }
-                    });
-                });
-            });
-
-            const imageRow = document.createElement('tr');
-            const imageCell = document.createElement('td');
-            imageCell.textContent = 'PRODUCT IMAGE';
-            imageRow.appendChild(imageCell);
-
-            productDataList.forEach(productData => {
-                const imgCell = document.createElement('td');
-                const img = document.createElement('img');
-                img.src = productData.productImage;
-                img.style.maxWidth = '100%';
-                img.style.height = 'auto';
-                imgCell.appendChild(img);
-                imageRow.appendChild(imgCell);
-            });
-
-            tbody.insertBefore(imageRow, tbody.firstChild);
-
-            const firstImageCell = imageRow.querySelector('td:nth-child(2)');
-            if (firstImageCell) {
-                const cellWidth = firstImageCell.offsetWidth;
-                imageRow.style.height = `${cellWidth}px`;
-                imageRow.querySelectorAll('td').forEach(cell => {
-                    cell.style.height = `${cellWidth}px`;
-                });
-            }
-
-            adjustFontSizeBasedOnTableContent();
-        }
-
-        function adjustFontSizeBasedOnTableContent() {
-            const table = document.getElementById('infoTable');
-            const tableWrapper = document.getElementById('tableWrapper');
-            if (!table || !tableWrapper) return;
-
-            const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
-            if (visibleRows.length === 0) return;
-
-            const cells = table.querySelectorAll('th, td');
-            const maxFontSize = 12;
-            const minFontSize = 2;
-            let optimalFontSize = maxFontSize;
-
-            cells.forEach(cell => cell.style.fontSize = '');
-
-            visibleRows.forEach(row => {
-                const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
-                    const style = window.getComputedStyle(cell);
-                    return style.display !== 'none' && style.visibility !== 'hidden';
-                });
-
-                visibleCells.forEach(cell => {
-                    const computedStyle = window.getComputedStyle(cell);
-                    const paddingTop = parseFloat(computedStyle.paddingTop);
-                    const paddingBottom = parseFloat(computedStyle.paddingBottom);
-                    const paddingLeft = parseFloat(computedStyle.paddingLeft);
-                    const paddingRight = parseFloat(computedStyle.paddingRight);
-                    const cellHeight = cell.clientHeight - paddingTop - paddingBottom;
-                    const cellWidth = cell.clientWidth - paddingLeft - paddingRight;
-
-                    if (cellHeight <= 0 || cellWidth <= 0 || !cell.textContent.trim()) return;
-
-                    cell.style.fontSize = `${maxFontSize}px`;
-                    const textHeight = cell.scrollHeight;
-                    const textWidth = cell.scrollWidth;
-
-                    const heightRatio = cellHeight / textHeight;
-                    const widthRatio = cellWidth / textWidth;
-                    const scaleFactor = Math.min(heightRatio, widthRatio);
-
-                    let cellMaxFontSize = Math.floor(maxFontSize * scaleFactor);
-                    cellMaxFontSize = Math.max(minFontSize, Math.min(cellMaxFontSize, maxFontSize));
-
-                    optimalFontSize = Math.min(optimalFontSize, cellMaxFontSize);
-                });
-            });
-
-            cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
-
-            const visibleTableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
-            const wrapperHeight = tableWrapper.clientHeight;
-            if (visibleTableHeight > wrapperHeight) {
-                const heightRatio = wrapperHeight / visibleTableHeight;
-                optimalFontSize = Math.floor(optimalFontSize * heightRatio);
-                optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
-                cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
-            }
-
-            console.log(`Optimal Font Size: ${optimalFontSize}px, Visible Table Height: ${visibleTableHeight}, Wrapper Height: ${wrapperHeight}`);
-        }
-
-        function setupTableObserver() {
-            const table = document.getElementById('infoTable');
-            if (!table) return;
-            const observer = new MutationObserver(() => {
-                adjustFontSizeBasedOnTableContent();
-            });
-            observer.observe(table, { childList: true, subtree: true });
-        }
-
-        document.addEventListener('DOMContentLoaded', setupTableObserver);
-        document.getElementById('generateButton').addEventListener('click', () => {
-            updateTable();
         });
     });
-</script>
+    const rows = [];
+    let techSheetRow = null;
+    const buttons = [];
+    let techSheetButton = null;
+    allSpecs.forEach(spec => {
+        if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(spec.toUpperCase())) return;
+        const tr = document.createElement('tr');
+        const tdSpec = document.createElement('td');
+        tdSpec.textContent = spec;
+        tr.appendChild(tdSpec);
+        productDataList.forEach(productData => {
+            Object.keys(productData.specifications).forEach(baseProductName => {
+                if (productData.specifications[baseProductName]) {
+                    let values = productData.specifications[baseProductName][spec] || [];
+                    values = simplifySizes(values, spec);
+                    const tdValue = document.createElement('td');
+                    const specUpper = spec.toUpperCase();
+                    let uniqueValues = spec.toLowerCase() !== 'product code' ? [...new Set(values)] : values;
+                    tdValue.innerHTML = uniqueValues.length > 0 ? uniqueValues.join(' ') : 'N/A';
+                    tr.appendChild(tdValue);
+                }
+            });
+        });
+        if (spec.toUpperCase() === 'TECH SHEET' || spec.toUpperCase() === 'TECHNICAL SHEET') {
+            techSheetRow = tr;
+        } else {
+            rows.push(tr);
+        }
+        const button = document.createElement('button');
+        button.textContent = `${spec}`;
+        button.classList.add('toggle-button');
+        button.onclick = () => {
+            tr.style.display = tr.style.display === 'none' ? '' : 'none';
+            button.classList.toggle('active');
+            adjustFontSizeBasedOnTableContent();
+        };
+        if (spec.toUpperCase() === 'TECH SHEET' || spec.toUpperCase() === 'TECHNICAL SHEET') {
+            techSheetButton = button;
+        } else {
+            buttons.push(button);
+        }
+    });
+    rows.forEach(row => tbody.appendChild(row));
+    if (techSheetRow) tbody.appendChild(techSheetRow);
+    buttons.forEach(button => buttonContainer.appendChild(button));
+    if (techSheetButton) buttonContainer.appendChild(techSheetButton);
+    adjustFontSizeBasedOnTableContent();
+}
+
+function adjustFontSizeBasedOnTableContent() {
+    const table = document.getElementById('infoTable');
+    const tableWrapper = document.getElementById('tableWrapper');
+    if (!table || !tableWrapper) return;
+    const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+    if (visibleRows.length === 0) return;
+    const cells = table.querySelectorAll('th, td');
+    const maxFontSize = 12;
+    const minFontSize = 2;
+    let optimalFontSize = maxFontSize;
+    cells.forEach(cell => cell.style.fontSize = '');
+    visibleRows.forEach(row => {
+        const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
+            const style = window.getComputedStyle(cell);
+            return style.display !== 'none' && style.visibility !== 'hidden';
+        });
+        visibleCells.forEach(cell => {
+            const computedStyle = window.getComputedStyle(cell);
+            const paddingTop = parseFloat(computedStyle.paddingTop);
+            const paddingBottom = parseFloat(computedStyle.paddingBottom);
+            const paddingLeft = parseFloat(computedStyle.paddingLeft);
+            const paddingRight = parseFloat(computedStyle.paddingRight);
+            const cellHeight = cell.clientHeight - paddingTop - paddingBottom;
+            const cellWidth = cell.clientWidth - paddingLeft - paddingRight;
+            if (cellHeight <= 0 || cellWidth <= 0 || !cell.textContent.trim()) return;
+            cell.style.fontSize = `${maxFontSize}px`;
+            const textHeight = cell.scrollHeight;
+            const textWidth = cell.scrollWidth;
+            const heightRatio = cellHeight / textHeight;
+            const widthRatio = cellWidth / textWidth;
+            const scaleFactor = Math.min(heightRatio, widthRatio);
+            let cellMaxFontSize = Math.floor(maxFontSize * scaleFactor);
+            cellMaxFontSize = Math.max(minFontSize, Math.min(cellMaxFontSize, maxFontSize));
+            optimalFontSize = Math.min(optimalFontSize, cellMaxFontSize);
+        });
+    });
+    cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
+    const visibleTableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
+    const wrapperHeight = tableWrapper.clientHeight;
+    if (visibleTableHeight > wrapperHeight) {
+        const heightRatio = wrapperHeight / visibleTableHeight;
+        optimalFontSize = Math.floor(optimalFontSize * heightRatio);
+        optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
+        cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
+    }
+    const groupRow = table.querySelector('.group-row');
+    const specRow = table.querySelector('thead tr:not(.group-row)');
+    if (groupRow && specRow) {
+        groupRow.style.height = `${specRow.offsetHeight}px`;
+    }
+}
+
+function setupTableObserver() {
+    const table = document.getElementById('infoTable');
+    if (!table) return;
+    const observer = new MutationObserver(() => adjustFontSizeBasedOnTableContent());
+    observer.observe(table, { childList: true, subtree: true });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupTableObserver();
+    document.getElementById('generateButton').addEventListener('click', () => updateTable());
+});
+    </script>
 </body>
 </html>
