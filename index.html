@@ -4,40 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
-	<style>
-		body { font-family: Open Sans, sans-serif; margin: 0; padding: 20px; }
-		.container { width: calc(297mm - 40px); margin: 0 auto; }
-		textarea { width: 100%; height: 100px; margin-bottom: 20px; }
-		.a4-container { width: 100%; height: 210mm; border: 1px solid #000; padding: 20px; box-sizing: border-box; position: relative; }
-		.logo { width: 100px; position: absolute; top: 20px; left: 20px; }
-		.title { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap; font-weight: bold; letter-spacing: 0.05rem;}
-		.contact-info { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 8pt; }
-		#tableWrapper { position: absolute; top: 80px; left: 20px; right: 20px; bottom: 70px; display: flex; justify-content: center; overflow: hidden; border-top: 1px solid black; border-bottom: 1px solid black; }
-		table { width: 100%; height: 100%; border-collapse: collapse; margin: 0; table-layout: fixed; }
-		table, th, td { border-right: 1px solid black; text-align: center; }
-		th, td { padding: 2px; overflow: hidden; }
-		th:last-child, td:last-child { border-right: none; } 
-		td:first-child, th { background-color: black; color: white; }
-		th a { color: white; }
-		td.specifications { background-color: black; color: white; text-transform: uppercase; }
-		td img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-		tr:nth-child(even) { background-color: #f2f2f2; }
-		tr:nth-child(odd) { background-color: white; }
-		.group-row th { background-color: #707070; color: white; }
-		.group-row th:first-child { background-color: black; color: white; }
-		.footer { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 8px; }
-		.styled-button { padding: 5px 5px; margin: 1px; background-color: green; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
-		.styled-button:active { background-color: grey; }
-		.toggle-button { padding: 5px 5px; margin: 1px; background-color: #303030; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
-		.toggle-button.active { background-color: lightgrey; color: black; }
-		.button-container { margin-bottom: 20px; }
-		td a { color: inherit; text-decoration: underline; }
-		@media print {
-			body * { visibility: hidden; }
-			.a4-container, .a4-container * { visibility: visible; }
-			.a4-container { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: none; }
-		}
-	</style>
+    <style>
+        body { font-family: Open Sans, sans-serif; margin: 0; padding: 20px; }
+        .container { width: calc(297mm - 40px); margin: 0 auto; }
+        textarea { width: 100%; height: 100px; margin-bottom: 20px; }
+        .a4-container { width: 100%; height: 210mm; border: 1px solid #000; padding: 20px; box-sizing: border-box; position: relative; }
+        .logo { width: 100px; position: absolute; top: 20px; left: 20px; }
+        .title { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap; font-weight: bold; letter-spacing: 0.05rem;}
+        .contact-info { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 8pt; }
+        #tableWrapper { position: absolute; top: 80px; left: 20px; right: 20px; bottom: 70px; display: flex; justify-content: center; overflow: hidden; border-top: 1px solid black; border-bottom: 1px solid black; }
+        table { width: 100%; height: 100%; border-collapse: collapse; margin: 0; table-layout: fixed; }
+        table, th, td { border-right: 1px solid black; text-align: center; }
+        th, td { padding: 2px; overflow: hidden; }
+        th:last-child, td:last-child { border-right: none; } 
+        td:first-child, th { background-color: black; color: white; }
+        th a { color: white; }
+        td.specifications { background-color: black; color: white; text-transform: uppercase; }
+        td img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        tr:nth-child(odd) { background-color: white; }
+        .group-row th { background-color: #707070; color: white; }
+        .group-row th:first-child { background-color: black; color: white; }
+        .footer { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 8px; }
+        .styled-button { padding: 5px 5px; margin: 1px; background-color: green; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
+        .styled-button:active { background-color: grey; }
+        .toggle-button { padding: 5px 5px; margin: 1px; background-color: #303030; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
+        .toggle-button.active { background-color: lightgrey; color: black; }
+        .button-container { margin-bottom: 20px; }
+        td a { color: inherit; text-decoration: underline; }
+        @media print {
+            body * { visibility: hidden; }
+            .a4-container, .a4-container * { visibility: visible; }
+            .a4-container { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: none; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -93,6 +93,7 @@ const allSpecifications = {};
 const productDataList = [];
 let previousUrls = [];
 let toggleStates = {};
+let lastUrlInput = '';
 
 function printPage() {
     window.print();
@@ -187,6 +188,9 @@ function adjustTitleFontSize(titleElement, text) {
 }
 
 async function updateTable() {
+    // Clear the productDataList array to avoid appending previous data
+    productDataList.length = 0;
+
     const urlInput = document.getElementById('urlInput').value;
     const lines = urlInput.split('\n').map(line => line.trim()).filter(line => line !== '');
     let title = '';
@@ -206,35 +210,22 @@ async function updateTable() {
     });
     if (currentGroup) groups.push(currentGroup);
     const effectiveUrls = groups.length > 0 ? groups.flatMap(g => g.urls) : urls;
-    const newUrls = effectiveUrls.filter(url => !previousUrls.includes(url));
-    const removedUrls = previousUrls.filter(url => !effectiveUrls.includes(url));
     previousUrls = effectiveUrls;
     const tbody = document.getElementById('infoTable').querySelector('tbody');
     const thead = document.getElementById('infoTable').querySelector('thead');
     const buttonContainer = document.querySelector('.button-container');
     const titleElement = document.getElementById('pageTitle');
     tbody.innerHTML = '';
-    thead.innerHTML = '<tr><th>SPECIFICATION</th></tr>';
+    thead.innerHTML = '<tr><th>SPECIFICATION</th></thead>';
     buttonContainer.innerHTML = '';
     titleElement.textContent = title;
     if (title) adjustTitleFontSize(titleElement, title);
     else titleElement.style.fontSize = '';
-    removedUrls.forEach(url => {
-        const productCode = url.split('/').pop();
-        const th = Array.from(thead.querySelectorAll('th')).find(th => th.textContent === productCode);
-        if (th) {
-            const index = Array.from(thead.children[0].children).indexOf(th);
-            thead.children[0].removeChild(th);
-            Array.from(tbody.children).forEach(tr => tr.children[index] && tr.removeChild(tr.children[index]));
-        }
-    });
-    for (const url of newUrls) {
-        let productData = productDataList.find(data => data.url === url);
-        if (!productData) {
-            productData = await scrapeProductData(url);
-            productData.url = url;
-            productDataList.push(productData);
-        }
+    
+    for (const url of effectiveUrls) {
+        let productData = await scrapeProductData(url);
+        productData.url = url;
+        productDataList.push(productData);
         const productCode = url.split('/').pop();
         const th = document.createElement('th');
         const a = document.createElement('a');
@@ -243,6 +234,7 @@ async function updateTable() {
         th.appendChild(a);
         thead.children[0].appendChild(th);
     }
+    
     if (groups.length > 0) {
         const groupRow = document.createElement('tr');
         groupRow.classList.add('group-row');
@@ -274,6 +266,7 @@ async function updateTable() {
             });
         });
     }
+    
     const imageRow = document.createElement('tr');
     const imageCell = document.createElement('td');
     imageCell.textContent = 'PRODUCT IMAGE';
@@ -288,12 +281,14 @@ async function updateTable() {
         imageRow.appendChild(imgCell);
     });
     tbody.appendChild(imageRow);
+    
     const firstImageCell = imageRow.querySelector('td:nth-child(2)');
     if (firstImageCell) {
         const cellWidth = firstImageCell.offsetWidth;
         imageRow.style.height = `${cellWidth}px`;
         imageRow.querySelectorAll('td').forEach(cell => cell.style.height = `${cellWidth}px`);
     }
+    
     const allSpecs = new Set();
     productDataList.forEach(productData => {
         Object.keys(productData.specifications).forEach(baseProductName => {
@@ -302,16 +297,20 @@ async function updateTable() {
             }
         });
     });
+    
     const rows = [];
     let techSheetRow = null;
     const buttons = [];
     let techSheetButton = null;
+    
     allSpecs.forEach(spec => {
         if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(spec.toUpperCase())) return;
+        
         const tr = document.createElement('tr');
         const tdSpec = document.createElement('td');
         tdSpec.textContent = spec;
         tr.appendChild(tdSpec);
+        
         productDataList.forEach(productData => {
             Object.keys(productData.specifications).forEach(baseProductName => {
                 if (productData.specifications[baseProductName]) {
@@ -325,30 +324,41 @@ async function updateTable() {
                 }
             });
         });
+        
         if (spec.toUpperCase() === 'TECH SHEET' || spec.toUpperCase() === 'TECHNICAL SHEET') {
             techSheetRow = tr;
         } else {
             rows.push(tr);
         }
+        
         const button = document.createElement('button');
         button.textContent = `${spec}`;
         button.classList.add('toggle-button');
+        
         button.onclick = () => {
             tr.style.display = tr.style.display === 'none' ? '' : 'none';
             button.classList.toggle('active');
             adjustFontSizeBasedOnTableContent();
         };
+        
         if (spec.toUpperCase() === 'TECH SHEET' || spec.toUpperCase() === 'TECHNICAL SHEET') {
             techSheetButton = button;
         } else {
             buttons.push(button);
         }
     });
+    
     rows.forEach(row => tbody.appendChild(row));
+    
     if (techSheetRow) tbody.appendChild(techSheetRow);
+    
     buttons.forEach(button => buttonContainer.appendChild(button));
+    
     if (techSheetButton) buttonContainer.appendChild(techSheetButton);
+    
     adjustFontSizeBasedOnTableContent();
+    
+    document.getElementById('generateButton').disabled = true;
 }
 
 function adjustFontSizeBasedOnTableContent() {
@@ -412,8 +422,15 @@ function setupTableObserver() {
 
 document.addEventListener('DOMContentLoaded', () => {
     setupTableObserver();
-    document.getElementById('generateButton').addEventListener('click', () => updateTable());
+    document.getElementById('generateButton').addEventListener('click', () => {
+        updateTable();
+        lastUrlInput = document.getElementById('urlInput').value;
+    });
+    document.getElementById('urlInput').addEventListener('input', () => {
+        const currentUrlInput = document.getElementById('urlInput').value;
+        document.getElementById('generateButton').disabled = currentUrlInput === lastUrlInput;
+    });
 });
-    </script>
+</script>
 </body>
 </html>
