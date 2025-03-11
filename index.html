@@ -188,7 +188,6 @@ function adjustTitleFontSize(titleElement, text) {
 }
 
 async function updateTable() {
-    // Clear the productDataList array to avoid appending previous data
     productDataList.length = 0;
 
     const urlInput = document.getElementById('urlInput').value;
@@ -248,7 +247,6 @@ async function updateTable() {
         });
         thead.insertBefore(groupRow, thead.children[0]);
 
-        // Add borders to the left and right of each group column
         const groupIndices = [];
         groupRow.querySelectorAll('th').forEach((th, index) => {
             const colspan = parseInt(th.getAttribute('colspan'), 10) || 1;
