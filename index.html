@@ -32,6 +32,8 @@
         .toggle-button.active { background-color: lightgrey; color: black; }
         .button-container { margin-bottom: 20px; }
         td a { color: inherit; text-decoration: underline; }
+        .cell-value { margin-bottom: 4px; }
+        .cell-value:last-child { margin-bottom: 0; }
         @media print {
             body * { visibility: hidden; }
             .a4-container, .a4-container * { visibility: visible; }
@@ -331,7 +333,11 @@ async function updateTable() {
                     const tdValue = document.createElement('td');
                     const specUpper = spec.toUpperCase();
                     let uniqueValues = spec.toLowerCase() !== 'product code' ? [...new Set(values)] : values;
-                    tdValue.innerHTML = uniqueValues.length > 0 ? uniqueValues.join(' ') : 'N/A';
+                    if (specUpper === 'TECHNICAL SHEET') {
+                        tdValue.innerHTML = uniqueValues.length > 0 ? uniqueValues.join(' ') : 'N/A';
+                    } else {
+                        tdValue.innerHTML = uniqueValues.length > 0 ? uniqueValues.map(val => `<div class="cell-value">${val}</div>`).join('') : 'N/A';
+                    }
                     tr.appendChild(tdValue);
                 }
             });
@@ -380,7 +386,7 @@ function adjustFontSizeBasedOnTableContent() {
     const tableWrapper = document.getElementById('tableWrapper');
     if (!table || !tableWrapper) return;
     const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
-    if (visibleRows.length === 0) return;
+    if (visibleRows.length == 0) return;
     const cells = table.querySelectorAll('th, td');
     const maxFontSize = 12;
     const minFontSize = 2;
@@ -440,6 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('generateButton').addEventListener('click', () => {
         updateTable();
         lastUrlInput = document.getElementById('urlInput').value;
+        document.getElementById('generateButton').disabled = true;
     });
     document.getElementById('urlInput').addEventListener('input', () => {
         const currentUrlInput = document.getElementById('urlInput').value;
