@@ -21,8 +21,8 @@
         th a { color: white; }
         td.specifications { background-color: black; color: white; text-transform: uppercase; }
         td img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        tr:nth-child(odd) { background-color: white; }
+        tr.grey-row { background-color: #f2f2f2; }
+        tr.white-row { background-color: white; }
         .group-row th { background-color: #707070; color: white; }
         .group-row th:first-child { background-color: black; color: white; }
         .footer { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 8px; }
@@ -187,6 +187,20 @@ function adjustTitleFontSize(titleElement, text) {
     titleElement.style.fontSize = `${fontSize}pt`;
 }
 
+function updateRowColors() {
+    const table = document.getElementById('infoTable');
+    const visibleRows = Array.from(table.querySelectorAll('tbody tr')).filter(tr => tr.style.display !== 'none');
+    
+    visibleRows.forEach((row, index) => {
+        row.classList.remove('grey-row', 'white-row');
+        if (index % 2 === 0) {
+            row.classList.add('white-row');
+        } else {
+            row.classList.add('grey-row');
+        }
+    });
+}
+
 async function updateTable() {
     productDataList.length = 0;
 
@@ -215,7 +229,7 @@ async function updateTable() {
     const buttonContainer = document.querySelector('.button-container');
     const titleElement = document.getElementById('pageTitle');
     tbody.innerHTML = '';
-    thead.innerHTML = '<tr><th>SPECIFICATION</th></thead>';
+    thead.innerHTML = '<tr><th>SPECIFICATION</th></tr>';
     buttonContainer.innerHTML = '';
     titleElement.textContent = title;
     if (title) adjustTitleFontSize(titleElement, title);
@@ -337,6 +351,7 @@ async function updateTable() {
             tr.style.display = tr.style.display === 'none' ? '' : 'none';
             button.classList.toggle('active');
             adjustFontSizeBasedOnTableContent();
+            updateRowColors();
         };
         
         if (spec.toUpperCase() === 'TECH SHEET' || spec.toUpperCase() === 'TECHNICAL SHEET') {
@@ -354,6 +369,7 @@ async function updateTable() {
     
     if (techSheetButton) buttonContainer.appendChild(techSheetButton);
     
+    updateRowColors();
     adjustFontSizeBasedOnTableContent();
     
     document.getElementById('generateButton').disabled = true;
@@ -390,9 +406,9 @@ function adjustFontSizeBasedOnTableContent() {
             const heightRatio = cellHeight / textHeight;
             const widthRatio = cellWidth / textWidth;
             const scaleFactor = Math.min(heightRatio, widthRatio);
-            let cellMaxFontSize = Math.floor(maxFontSize * scaleFactor);
-            cellMaxFontSize = Math.max(minFontSize, Math.min(cellMaxFontSize, maxFontSize));
-            optimalFontSize = Math.min(optimalFontSize, cellMaxFontSize);
+            let tdFontHeight = Math.floor(maxFontSize * scaleFactor);
+            tdFontHeight = Math.max(minFontSize, Math.min(tdFontHeight, maxFontSize));
+            optimalFontSize = Math.min(optimalFontSize, tdFontHeight);
         });
     });
     cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
@@ -409,6 +425,7 @@ function adjustFontSizeBasedOnTableContent() {
     if (groupRow && specRow) {
         groupRow.style.height = `${specRow.offsetHeight}px`;
     }
+    updateRowColors();
 }
 
 function setupTableObserver() {
