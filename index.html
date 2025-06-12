@@ -637,7 +637,7 @@ function adjustFontSizeBasedOnTableContent() {
     const wrapperHeight = tableWrapper.clientHeight;
     if (visibleTableHeight > wrapperHeight) {
         const heightRatio = wrapperHeight / visibleTableHeight;
-        const dampedRatio = Math.max(0.7, heightRatio); 
+        const dampedRatio = Math.max(0.71, heightRatio); 
         optimalFontSize = Math.floor(optimalFontSize * dampedRatio);
         optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
         cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
