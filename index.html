@@ -5,40 +5,218 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
     <style>
-        body { font-family: Open Sans, sans-serif; margin: 0; padding: 20px; }
-        .container { width: calc(297mm - 40px); margin: 0 auto; }
-        textarea { width: 100%; height: 100px; margin-bottom: 20px; }
-        .a4-container { width: 100%; height: 210mm; border: 1px solid #000; padding: 20px; box-sizing: border-box; position: relative; }
-        .logo { width: 100px; position: absolute; top: 20px; left: 20px; }
-        .title { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap; font-weight: bold; letter-spacing: 0.05rem;}
-        .contact-info { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 8pt; }
-        #tableWrapper { position: absolute; top: 80px; left: 20px; right: 20px; bottom: 70px; display: flex; justify-content: center; overflow: hidden; border-top: 1px solid black; border-bottom: 1px solid black; }
-        table { width: 100%; height: 100%; border-collapse: collapse; margin: 0; table-layout: fixed; }
-        table, th, td { border-right: 1px solid black; text-align: center; }
-        th, td { padding: 2px; overflow: hidden; }
-        th:last-child, td:last-child { border-right: none; } 
-        td:first-child, th { background-color: black; color: white; }
-        th a { color: white; }
-        td.specifications { background-color: black; color: white; text-transform: uppercase; }
-        td img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-        tr.grey-row { background-color: #f2f2f2; }
-        tr.white-row { background-color: white; }
-        .group-row th { background-color: #707070; color: white; }
-        .group-row th:first-child { background-color: black; color: white; }
-        .footer { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 8px; }
-        .styled-button { padding: 5px 5px; margin: 1px; background-color: green; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
-        .styled-button:active { background-color: grey; }
-        .toggle-button { padding: 5px 5px; margin: 1px; background-color: #303030; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; user-select: none; }
-        .toggle-button.active { background-color: lightgrey; color: black; }
-        .button-container { margin-bottom: 20px; }
-        td a { color: inherit; text-decoration: underline; }
-        .cell-value { margin-bottom: 4px; }
-        .cell-value:last-child { margin-bottom: 0; }
-        @media print {
-            body * { visibility: hidden; }
-            .a4-container, .a4-container * { visibility: visible; }
-            .a4-container { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: none; }
-        }
+body {
+    font-family: Open Sans, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    width: calc(297mm - 40px);
+    margin: 0 auto;
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 20px;
+}
+
+.a4-container {
+    width: 100%;
+    height: 210mm;
+    border: 1px solid #000;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.logo {
+    width: 100px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.title {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    white-space: nowrap;
+    font-weight: bold;
+    letter-spacing: 0.05rem;
+}
+
+.contact-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    text-align: right;
+    font-size: 8pt;
+}
+
+#tableWrapper {
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    right: 20px;
+    bottom: 70px;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+table {
+    width: 100%;
+    height: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    table-layout: fixed;
+}
+
+table, th, td {
+    border-right: 1px solid black;
+    text-align: center;
+}
+
+th, td {
+    padding: 2px;
+    overflow: hidden;
+}
+
+th:last-child, td:last-child {
+    border-right: none;
+}
+
+td:first-child, th {
+    background-color: black;
+    color: white;
+}
+
+th a {
+    color: white;
+}
+
+td.specifications {
+    background-color: black;
+    color: white;
+    text-transform: uppercase;
+}
+
+td img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+tr.grey-row {
+    background-color: #f2f2f2;
+}
+
+tr.white-row {
+    background-color: white;
+}
+
+.group-row th {
+    background-color: #707070;
+    color: white;
+}
+
+.group-row th:first-child {
+    background-color: black;
+    color: white;
+}
+
+.footer {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 8px;
+}
+
+.styled-button {
+    padding: 5px 5px;
+    margin: 1px;
+    background-color: green;
+    color: white;
+    border: 2px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.styled-button:active {
+    background-color: grey;
+}
+
+.toggle-button {
+    padding: 5px 5px;
+    margin: 1px;
+    background-color: #303030;
+    color: white;
+    border: 2px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-button.active {
+    background-color: lightgrey;
+    color: black;
+}
+
+.button-container {
+    margin-bottom: 20px;
+}
+
+td a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.cell-value {
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.cell-value:last-child {
+    margin-bottom: 0;
+}
+
+.cell-value strong {
+    font-size: 0.9em;
+    font-weight: lighter;
+    color: #000;
+    display: inline;
+    margin-right: 4px;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    .a4-container, .a4-container * {
+        visibility: visible;
+    }
+    
+    .a4-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+}
     </style>
 </head>
 <body>
@@ -134,49 +312,69 @@ function cleanTechnicalSpecificationTable(table) {
 
 async function scrapeProductData(url) {
     const html = await fetchHTML(url);
-    if (!html) return { productName: 'Unknown Product', productImage: '', specifications: {} };
+    if (!html) return { productName: 'Unknown Product', productImage: '', specifications: {}, subcodes: [] };
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const productName = doc.querySelector('#PageProductID')?.textContent.trim() || 'Unknown Product';
     const productImage = doc.querySelector('img[src^="https://d2oo5quzpsdib.cloudfront.net/Website/Product/Main/"]')?.src || '';
     const specifications = {};
+    const subcodes = [];
+    
     const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
     if (heading && heading.nextElementSibling) {
         const table = heading.nextElementSibling.querySelector('table');
         if (table) {
             cleanTechnicalSpecificationTable(table);
-            Array.from(table.querySelectorAll('tr')).forEach(row => {
+            let headerCodes = [];
+            const headerRow = table.querySelector('tr');
+            if (headerRow) {
+                headerCodes = Array.from(headerRow.querySelectorAll('th, td')).slice(1).map(cell => cell.textContent.trim());
+            }
+            
+            Array.from(table.querySelectorAll('tr')).forEach((row, rowIndex) => {
                 const cells = row.querySelectorAll('td, th');
                 if (cells.length > 1) {
                     const key = cells[0].textContent.trim();
-                    let values;
+                    let values = [];
+                    let codes = [];
                     const keyUpper = key.toUpperCase();
+                    
                     if (keyUpper.includes('MAX') || keyUpper.includes('MAX.') || keyUpper.includes('MAXIMUM') || 
                         keyUpper.includes('SHIPPING') || keyUpper.includes('SHIP') || keyUpper.includes('WEIGHT')) {
                         values = [cells[cells.length - 1].innerHTML];
+                        codes = [productName];
                     } else {
                         values = Array.from(cells).slice(1).map(cell => cell.innerHTML);
+                        codes = headerCodes.length > 0 ? headerCodes : values.map((_, i) => `${productName}${i + 1}`);
                     }
-                    const baseProductName = productName.replace(/\d+$/, '');
-                    if (!specifications[baseProductName]) specifications[baseProductName] = {};
-                    specifications[baseProductName][key] = values;
+                    
+                    specifications[key] = values.map((value, index) => ({
+                        value: value,
+                        subcode: codes[index] || productName
+                    }));
+                    
+                    if (keyUpper === 'PRODUCT CODE') {
+                        codes.forEach(code => {
+                            if (code && !subcodes.includes(code)) subcodes.push(code);
+                        });
+                    }
                 }
             });
         }
     }
-    return { productName, productImage, specifications };
+    return { productName, productImage, specifications, subcodes };
 }
 
 function simplifySizes(values, spec) {
     const specUpper = spec.toUpperCase();
-    return values.map(value => {
-        if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) return value;
+    return values.map(item => {
+        if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) return item;
         if (specUpper.includes('MAX') || specUpper.includes('MAXIMUM')) {
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = value;
-            return tempDiv.textContent.trim().split(', ').pop().trim();
+            tempDiv.innerHTML = item.value;
+            return { value: tempDiv.textContent.trim().split(', ').pop().trim(), subcode: item.subcode };
         }
-        return value;
+        return item;
     });
 }
 
@@ -305,11 +503,7 @@ async function updateTable() {
     
     const allSpecs = new Set();
     productDataList.forEach(productData => {
-        Object.keys(productData.specifications).forEach(baseProductName => {
-            if (productData.specifications[baseProductName]) {
-                Object.keys(productData.specifications[baseProductName]).forEach(spec => allSpecs.add(spec));
-            }
-        });
+        Object.keys(productData.specifications).forEach(spec => allSpecs.add(spec));
     });
     
     const rows = [];
@@ -318,49 +512,70 @@ async function updateTable() {
     let techSheetButton = null;
     
     allSpecs.forEach(spec => {
-        if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(spec.toUpperCase())) return;
-        
+        const specUpper = spec.toUpperCase();
+        if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) return;
+
         const tr = document.createElement('tr');
         const tdSpec = document.createElement('td');
         tdSpec.textContent = spec;
         tr.appendChild(tdSpec);
-        
-        productDataList.forEach(productData => {
-            Object.keys(productData.specifications).forEach(baseProductName => {
-                if (productData.specifications[baseProductName]) {
-                    let values = productData.specifications[baseProductName][spec] || [];
-                    values = simplifySizes(values, spec);
-                    const tdValue = document.createElement('td');
-                    const specUpper = spec.toUpperCase();
-                    let uniqueValues = spec.toLowerCase() !== 'product code' ? [...new Set(values)] : values;
-                    if (specUpper === 'TECHNICAL SHEET') {
-                        tdValue.innerHTML = uniqueValues.length > 0 ? uniqueValues.join(' ') : 'N/A';
-                    } else {
-                        tdValue.innerHTML = uniqueValues.length > 0 ? uniqueValues.map(val => `<div class="cell-value">${val}</div>`).join('') : 'N/A';
+
+        productDataList.forEach((productData, index) => {
+            const tdValue = document.createElement('td');
+            let values = productData.specifications[spec] || [];
+            values = simplifySizes(values, spec);
+            
+            if (values.length === 0) {
+                tdValue.innerHTML = 'N/A';
+            } else {
+                const valueGroups = {};
+                values.forEach(item => {
+                    const valueKey = item.value;
+                    if (!valueGroups[valueKey]) {
+                        valueGroups[valueKey] = [];
                     }
-                    tr.appendChild(tdValue);
+                    valueGroups[valueKey].push(item.subcode);
+                });
+
+                const uniqueValues = Object.keys(valueGroups);
+                const isSingleValue = uniqueValues.length === 1;
+
+                if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
+                    tdValue.innerHTML = values.map(item => item.value).join(' ');
+                } else if (specUpper === 'PRODUCT CODE') {
+                    tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
+                } else if (isSingleValue) {
+                    tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
+                } else {
+                    // Display subcodes on a separate line above each value
+                    const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
+                        return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
+                    });
+                    tdValue.innerHTML = formattedValues.join('');
                 }
-            });
+            }
+            
+            tr.appendChild(tdValue);
         });
-        
-        if (spec.toUpperCase() === 'TECH SHEET' || spec.toUpperCase() === 'TECHNICAL SHEET') {
+
+        if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
             techSheetRow = tr;
         } else {
             rows.push(tr);
         }
-        
+
         const button = document.createElement('button');
         button.textContent = `${spec}`;
         button.classList.add('toggle-button');
-        
+
         button.onclick = () => {
             tr.style.display = tr.style.display === 'none' ? '' : 'none';
             button.classList.toggle('active');
             adjustFontSizeBasedOnTableContent();
             updateRowColors();
         };
-        
-        if (spec.toUpperCase() === 'TECH SHEET' || spec.toUpperCase() === 'TECHNICAL SHEET') {
+
+        if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
             techSheetButton = button;
         } else {
             buttons.push(button);
@@ -386,16 +601,16 @@ function adjustFontSizeBasedOnTableContent() {
     const tableWrapper = document.getElementById('tableWrapper');
     if (!table || !tableWrapper) return;
     const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
-    if (visibleRows.length == 0) return;
+    if (visibleRows.length === 0) return;
     const cells = table.querySelectorAll('th, td');
     const maxFontSize = 12;
-    const minFontSize = 2;
+    const minFontSize = 3;
     let optimalFontSize = maxFontSize;
     cells.forEach(cell => cell.style.fontSize = '');
     visibleRows.forEach(row => {
         const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
             const style = window.getComputedStyle(cell);
-            return style.display !== 'none' && style.visibility !== 'hidden';
+            return cell.style.display !== 'none' && style.visibility !== 'hidden';
         });
         visibleCells.forEach(cell => {
             const computedStyle = window.getComputedStyle(cell);
@@ -422,7 +637,8 @@ function adjustFontSizeBasedOnTableContent() {
     const wrapperHeight = tableWrapper.clientHeight;
     if (visibleTableHeight > wrapperHeight) {
         const heightRatio = wrapperHeight / visibleTableHeight;
-        optimalFontSize = Math.floor(optimalFontSize * heightRatio);
+        const dampedRatio = Math.max(0.7, heightRatio); 
+        optimalFontSize = Math.floor(optimalFontSize * dampedRatio);
         optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
         cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
     }
