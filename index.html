@@ -190,10 +190,34 @@ td a {
 }
 
 .cell-value strong {
-    font-size: 0.9em;
+    font-size: 1em;
     font-weight: lighter;
     color: #000;
     display: inline;
+}
+
+.checkbox-container {
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.progress-container {
+    width: 100%;
+    height: 20px;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.3s ease-in-out;
 }
 
 @media print {
@@ -214,6 +238,10 @@ td a {
         margin: 0;
         padding: 0;
         border: none;
+    }
+
+    .progress-container {
+        display: none !important;
     }
 }
     </style>
@@ -242,6 +270,13 @@ https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
         </textarea>
         <button id="generateButton" class='styled-button'>GENERATE PAGE ></button>
         <button type="button" onclick="printPage()" class='styled-button'>EXPORT AS PDF</button>
+        <div class="checkbox-container">
+            <input type="checkbox" id="splitProductCodes" name="splitProductCodes">
+            <label for="splitProductCodes">Split Product Codes</label>
+        </div>
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
         <div class="button-container"></div>
         <div class="a4-container" id="a4Container">
             <img src="https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg" alt="Logo" class="logo">
@@ -290,6 +325,7 @@ async function fetchHTML(url) {
         }
         return '';
     } catch (error) {
+        console.error(`Error fetching URL ${url}:`, error);
         return '';
     }
 }
@@ -305,13 +341,14 @@ function cleanTechnicalSpecificationTable(table) {
                 if (cell.textContent.trim() === '' && !cell.querySelector('a')) cell.remove();
             }
         });
-        if (Array.from(row.cells).some(cell => cell.textContent.trim() === '' && !cell.querySelector('a'))) row.remove();
+        if (row.cells.length === 0 || Array.from(row.cells).every(cell => cell.textContent.trim() === '' && !cell.querySelector('a'))) row.remove();
     });
 }
 
 async function scrapeProductData(url) {
     const html = await fetchHTML(url);
-    if (!html) return { productName: 'Unknown Product', productImage: '', specifications: {}, subcodes: [] };
+    if (!html) return { productName: 'Unknown Product', productImage: '', specifications: {}, subcodes: [], url };
+    
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const productName = doc.querySelector('#PageProductID')?.textContent.trim() || 'Unknown Product';
@@ -334,25 +371,15 @@ async function scrapeProductData(url) {
                 const cells = row.querySelectorAll('td, th');
                 if (cells.length > 1) {
                     const key = cells[0].textContent.trim();
-                    let values = [];
-                    let codes = [];
-                    const keyUpper = key.toUpperCase();
-                    
-                    if (keyUpper.includes('MAX') || keyUpper.includes('MAX.') || keyUpper.includes('MAXIMUM') || 
-                        keyUpper.includes('SHIPPING') || keyUpper.includes('SHIP') || keyUpper.includes('WEIGHT')) {
-                        values = [cells[cells.length - 1].innerHTML];
-                        codes = [productName];
-                    } else {
-                        values = Array.from(cells).slice(1).map(cell => cell.innerHTML);
-                        codes = headerCodes.length > 0 ? headerCodes : values.map((_, i) => `${productName}${i + 1}`);
-                    }
+                    const values = Array.from(cells).slice(1).map(cell => cell.innerHTML.trim());
+                    const codes = headerCodes.length > 0 ? headerCodes : values.map((_, i) => `${productName}${i + 1}`);
                     
                     specifications[key] = values.map((value, index) => ({
                         value: value,
                         subcode: codes[index] || productName
                     }));
                     
-                    if (keyUpper === 'PRODUCT CODE') {
+                    if (key.toUpperCase() === 'PRODUCT CODE') {
                         codes.forEach(code => {
                             if (code && !subcodes.includes(code)) subcodes.push(code);
                         });
@@ -361,20 +388,30 @@ async function scrapeProductData(url) {
             });
         }
     }
-    return { productName, productImage, specifications, subcodes };
+    return { productName, productImage, specifications, subcodes, url };
 }
 
-function simplifySizes(values, spec) {
+function simplifySizes(values, spec, splitProductCodes) {
     const specUpper = spec.toUpperCase();
     return values.map(item => {
         if (['TECH SHEET', 'SELL SHEET', 'CAD'].includes(specUpper)) return item;
-        if (specUpper.includes('MAX') || specUpper.includes('MAXIMUM')) {
+        if ((specUpper.includes('MAX') || specUpper.includes('MAXIMUM')) && !splitProductCodes) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = item.value;
             return { value: tempDiv.textContent.trim().split(', ').pop().trim(), subcode: item.subcode };
         }
         return item;
     });
+}
+
+function selectCompactValue(values, spec, productName) {
+    const specUpper = spec.toUpperCase();
+    if (specUpper.includes('MAX') || specUpper.includes('MAX.') || specUpper.includes('MAXIMUM') || 
+        specUpper.includes('SHIPPING') || specUpper.includes('SHIP') || specUpper.includes('WEIGHT')) {
+        const lastValue = values[values.length - 1]?.value || 'N/A';
+        return [{ value: lastValue, subcode: productName }];
+    }
+    return values;
 }
 
 function adjustTitleFontSize(titleElement, text) {
@@ -404,6 +441,7 @@ async function updateTable() {
     productDataList.length = 0;
 
     const urlInput = document.getElementById('urlInput').value;
+    const splitProductCodes = document.getElementById('splitProductCodes').checked;
     const lines = urlInput.split('\n').map(line => line.trim()).filter(line => line !== '');
     let title = '';
     const groups = [];
@@ -423,6 +461,12 @@ async function updateTable() {
     if (currentGroup) groups.push(currentGroup);
     const effectiveUrls = groups.length > 0 ? groups.flatMap(g => g.urls) : urls;
     previousUrls = effectiveUrls;
+    
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    
     const tbody = document.getElementById('infoTable').querySelector('tbody');
     const thead = document.getElementById('infoTable').querySelector('thead');
     const buttonContainer = document.querySelector('.button-container');
@@ -434,18 +478,59 @@ async function updateTable() {
     if (title) adjustTitleFontSize(titleElement, title);
     else titleElement.style.fontSize = '';
     
+    const totalUrls = effectiveUrls.length;
+    let processedUrls = 0;
+    
     for (const url of effectiveUrls) {
         let productData = await scrapeProductData(url);
-        productData.url = url;
         productDataList.push(productData);
-        const productCode = url.split('/').pop();
+        processedUrls++;
+        const progressPercentage = (processedUrls / totalUrls) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+        await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
+    }
+    
+    progressContainer.style.display = 'none';
+    
+    let expandedProductDataList = [];
+    let productCodeToUrl = {};
+    if (splitProductCodes) {
+        productDataList.forEach(product => {
+            if (product.subcodes.length > 1) {
+                product.subcodes.forEach(subcode => {
+                    const newProduct = { ...product, subcodes: [subcode], productName: subcode };
+                    const newSpecifications = {};
+                    Object.keys(product.specifications).forEach(spec => {
+                        const values = product.specifications[spec] || [];
+                        const matchingValue = values.find(v => v.subcode === subcode);
+                        newSpecifications[spec] = matchingValue ? [matchingValue] : [];
+                    });
+                    newProduct.specifications = newSpecifications;
+                    newProduct.url = product.url;
+                    expandedProductDataList.push(newProduct);
+                    productCodeToUrl[subcode] = product.url;
+                });
+            } else {
+                expandedProductDataList.push(product);
+                productCodeToUrl[product.subcodes[0] || product.productName] = product.url;
+            }
+        });
+    } else {
+        expandedProductDataList = [...productDataList];
+        productDataList.forEach(product => {
+            productCodeToUrl[product.productName] = product.url;
+        });
+    }
+
+    expandedProductDataList.forEach(product => {
         const th = document.createElement('th');
         const a = document.createElement('a');
-        a.href = url;
+        const productCode = splitProductCodes ? (product.subcodes[0] || product.productName) : product.productName;
+        a.href = productCodeToUrl[productCode] || product.url;
         a.textContent = productCode;
         th.appendChild(a);
         thead.children[0].appendChild(th);
-    }
+    });
     
     if (groups.length > 0) {
         const groupRow = document.createElement('tr');
@@ -453,39 +538,31 @@ async function updateTable() {
         const emptyTh = document.createElement('th');
         groupRow.appendChild(emptyTh);
         groups.forEach(group => {
+            let groupProductCount = 0;
+            group.urls.forEach(url => {
+                const product = productDataList.find(p => p.url === url);
+                if (product && splitProductCodes) {
+                    groupProductCount += product.subcodes.length;
+                } else {
+                    groupProductCount += 1;
+                }
+            });
             const th = document.createElement('th');
             th.textContent = group.name;
-            th.colSpan = group.urls.length;
+            th.colSpan = groupProductCount;
             groupRow.appendChild(th);
         });
         thead.insertBefore(groupRow, thead.children[0]);
-
-        const groupIndices = [];
-        groupRow.querySelectorAll('th').forEach((th, index) => {
-            const colspan = parseInt(th.getAttribute('colspan'), 10) || 1;
-            for (let i = 0; i < colspan; i++) {
-                groupIndices.push(index + i);
-            }
-        });
-
-        tbody.querySelectorAll('tr').forEach(tr => {
-            groupIndices.forEach(idx => {
-                if (idx < tr.children.length) {
-                    tr.children[idx].style.borderLeft = '1px solid black';
-                    tr.children[idx].style.borderRight = '1px solid black';
-                }
-            });
-        });
     }
     
     const imageRow = document.createElement('tr');
     const imageCell = document.createElement('td');
     imageCell.textContent = 'PRODUCT IMAGE';
     imageRow.appendChild(imageCell);
-    productDataList.forEach(productData => {
+    expandedProductDataList.forEach(product => {
         const imgCell = document.createElement('td');
         const img = document.createElement('img');
-        img.src = productData.productImage;
+        img.src = product.productImage;
         img.style.maxWidth = '100%';
         img.style.height = 'auto';
         imgCell.appendChild(img);
@@ -501,8 +578,8 @@ async function updateTable() {
     }
     
     const allSpecs = new Set();
-    productDataList.forEach(productData => {
-        Object.keys(productData.specifications).forEach(spec => allSpecs.add(spec));
+    expandedProductDataList.forEach(product => {
+        Object.keys(product.specifications).forEach(spec => allSpecs.add(spec));
     });
     
     const rows = [];
@@ -519,38 +596,44 @@ async function updateTable() {
         tdSpec.textContent = spec;
         tr.appendChild(tdSpec);
 
-        productDataList.forEach((productData, index) => {
+        expandedProductDataList.forEach((product, index) => {
             const tdValue = document.createElement('td');
-            let values = productData.specifications[spec] || [];
-            values = simplifySizes(values, spec);
+            let values = product.specifications[spec] || [];
+            if (!splitProductCodes) {
+                values = selectCompactValue(values, spec, product.productName);
+            }
+            values = simplifySizes(values, spec, splitProductCodes);
             
             if (values.length === 0) {
                 tdValue.innerHTML = 'N/A';
             } else {
-                const valueGroups = {};
-                values.forEach(item => {
-                    const valueKey = item.value;
-                    if (!valueGroups[valueKey]) {
-                        valueGroups[valueKey] = [];
-                    }
-                    valueGroups[valueKey].push(item.subcode);
-                });
-
-                const uniqueValues = Object.keys(valueGroups);
-                const isSingleValue = uniqueValues.length === 1;
-
-                if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
-                    tdValue.innerHTML = values.map(item => item.value).join(' ');
-                } else if (specUpper === 'PRODUCT CODE') {
-                    tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
-                } else if (isSingleValue) {
-                    tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
+                if (splitProductCodes) {
+                    tdValue.innerHTML = `<div class="cell-value">${values[0]?.value || 'N/A'}</div>`;
                 } else {
-                    // Display subcodes on a separate line above each value
-                    const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
-                        return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
+                    const valueGroups = {};
+                    values.forEach(item => {
+                        const valueKey = item.value;
+                        if (!valueGroups[valueKey]) {
+                            valueGroups[valueKey] = [];
+                        }
+                        valueGroups[valueKey].push(item.subcode);
                     });
-                    tdValue.innerHTML = formattedValues.join('');
+
+                    const uniqueValues = Object.keys(valueGroups);
+                    const isSingleValue = uniqueValues.length === 1;
+
+                    if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
+                        tdValue.innerHTML = values.map(item => item.value).join(' ');
+                    } else if (specUpper === 'PRODUCT CODE') {
+                        tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
+                    } else if (isSingleValue) {
+                        tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
+                    } else {
+                        const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
+                            return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
+                        });
+                        tdValue.innerHTML = formattedValues.join('');
+                    }
                 }
             }
             
@@ -666,6 +749,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('urlInput').addEventListener('input', () => {
         const currentUrlInput = document.getElementById('urlInput').value;
         document.getElementById('generateButton').disabled = currentUrlInput === lastUrlInput;
+    });
+    document.getElementById('splitProductCodes').addEventListener('change', () => {
+        if (productDataList.length > 0) {
+            document.getElementById('generateButton').disabled = false;
+        }
     });
 });
 </script>
