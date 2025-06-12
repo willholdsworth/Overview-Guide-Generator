@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
-    <style>
+ <style>
 body {
     font-family: Open Sans, sans-serif;
     margin: 0;
@@ -29,6 +29,8 @@ textarea {
     padding: 20px;
     box-sizing: border-box;
     position: relative;
+    page-break-after: always;
+    margin-bottom: 20px;
 }
 
 .logo {
@@ -57,7 +59,7 @@ textarea {
     font-size: 8pt;
 }
 
-#tableWrapper {
+.table-wrapper {
     position: absolute;
     top: 80px;
     left: 20px;
@@ -221,27 +223,169 @@ td a {
 }
 
 @media print {
-    body * {
-        visibility: hidden;
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
     
-    .a4-container, .a4-container * {
-        visibility: visible;
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: Open Sans, sans-serif !important;
+    }
+    
+    .container {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .container > h1,
+    .container > textarea,
+    .container > button,
+    .container > .checkbox-container,
+    .container > .progress-container,
+    .container > .button-container {
+        display: none !important;
     }
     
     .a4-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        border: none;
+        width: 100% !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        border: none !important;
+        box-sizing: border-box !important;
+        page-break-before: always;
+        page-break-after: always;
+        page-break-inside: avoid;
+        position: relative !important;
+        display: block !important;
     }
-
-    .progress-container {
-        display: none !important;
+    
+    .a4-container:first-of-type {
+        page-break-before: avoid;
+    }
+    
+    .a4-container:last-of-type {
+        page-break-after: avoid;
+    }
+    
+    .logo {
+        position: absolute !important;
+        top: 20px !important;
+        left: 20px !important;
+        width: 100px !important;
+        display: block !important;
+    }
+    
+    .title {
+        position: absolute !important;
+        top: 20px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        text-align: center !important;
+        font-weight: bold !important;
+        letter-spacing: 0.05rem !important;
+        display: block !important;
+    }
+    
+    .contact-info {
+        position: absolute !important;
+        top: 20px !important;
+        right: 20px !important;
+        text-align: right !important;
+        font-size: 8pt !important;
+        display: block !important;
+    }
+    
+    .table-wrapper {
+        position: absolute !important;
+        top: 80px !important;
+        left: 20px !important;
+        right: 20px !important;
+        bottom: 70px !important;
+        border-top: 1px solid black !important;
+        border-bottom: 1px solid black !important;
+        display: block !important;
+        overflow: visible !important;
+    }
+    
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+        display: table !important;
+    }
+    
+    thead {
+        display: table-header-group !important;
+    }
+    
+    tbody {
+        display: table-row-group !important;
+    }
+    
+    tr {
+        display: table-row !important;
+        page-break-inside: avoid;
+    }
+    
+    th, td {
+        display: table-cell !important;
+        padding: 2px !important;
+        border-right: 1px solid black !important;
+        text-align: center !important;
+        overflow: hidden !important;
+    }
+    
+    th:last-child, td:last-child {
+        border-right: none !important;
+    }
+    
+    td:first-child, th {
+        background-color: black !important;
+        color: white !important;
+    }
+    
+    th a {
+        color: white !important;
+        text-decoration: underline !important;
+    }
+    
+    .group-row th {
+        background-color: #707070 !important;
+        color: white !important;
+    }
+    
+    .group-row th:first-child {
+        background-color: black !important;
+        color: white !important;
+    }
+    
+    .grey-row {
+        background-color: #f2f2f2 !important;
+    }
+    
+    .white-row {
+        background-color: white !important;
+    }
+    
+    td img {
+        display: block !important;
+        margin: 0 auto !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    .footer {
+        position: absolute !important;
+        bottom: 20px !important;
+        left: 20px !important;
+        right: 20px !important;
+        text-align: center !important;
+        font-size: 8px !important;
+        display: block !important;
     }
 }
     </style>
@@ -250,7 +394,118 @@ td a {
     <div class="container">
         <h1>PRODUCT OVERVIEW GUIDE GENERATOR</h1>
         <textarea id="urlInput" placeholder="Paste URLs here, one per line">
-TITLE - CEILING HINGE GUIDE
+TITLE - ARTICULATING WALL MOUNT GUIDE
+https://www.futureautomation.co.uk/Product/Details/PS32
+https://www.futureautomation.co.uk/Product/Details/PS40
+https://www.futureautomation.co.uk/Product/Details/PS55
+https://www.futureautomation.co.uk/Product/Details/PS65
+https://www.futureautomation.co.uk/Product/Details/PS80
+SPLIT - https://www.futureautomation.co.uk/Product/Details/DA
+https://www.futureautomation.co.uk/Product/Details/FSA1
+https://www.futureautomation.co.uk/Product/Details/FSA2
+
+TITLE - OUTDOOR / MARINE ARTICULATING WALL MOUNT GUIDE
+https://www.futureautomation.co.uk/Product/Details/IP-PS40
+https://www.futureautomation.co.uk/Product/Details/IP-PS55
+https://www.futureautomation.co.uk/Product/Details/IP-PS65
+https://www.futureautomation.co.uk/Product/Details/IP-PS80
+SPLIT - https://www.futureautomation.co.uk/Product/Details/PS-M
+https://www.futureautomation.co.uk/Product/Details/M-FSA2
+https://www.futureautomation.co.uk/Product/Details/MSH
+SPLIT - https://www.futureautomation.co.uk/Product/Details/IP-DA
+
+TITLE - FIXED POSITION WALL MOUNT GUIDE
+https://www.futureautomation.co.uk/Product/Details/FB49
+https://www.futureautomation.co.uk/Product/Details/FB22
+https://www.futureautomation.co.uk/Product/Details/FB80
+https://www.futureautomation.co.uk/Product/Details/V74-MO
+https://www.futureautomation.co.uk/Product/Details/M-V74
+https://www.futureautomation.co.uk/Product/Details/MAG-V2
+
+TITLE - MARINE PULL & SWIVEL BRACKET GUIDE
+https://www.futureautomation.co.uk/Product/Details/PS3219-2S-M
+https://www.futureautomation.co.uk/Product/Details/PS4026-2S-M
+https://www.futureautomation.co.uk/Product/Details/PS5531-2S-M
+https://www.futureautomation.co.uk/Product/Details/PS8034-M
+
+TITLE - WALL BOX GUIDE
+GROUP - UNIVERSAL WALL BOXES
+https://www.futureautomation.co.uk/Product/Details/WB
+https://www.futureautomation.co.uk/Product/Details/UB
+GROUP - PRODUCT SPECIFIC WALL BOXES
+https://www.futureautomation.co.uk/Product/Details/WB80
+https://www.futureautomation.co.uk/Product/Details/WB-PSE90
+https://www.futureautomation.co.uk/Product/Details/WB-QA2
+https://www.futureautomation.co.uk/Product/Details/WB-DA
+https://www.futureautomation.co.uk/Product/Details/WB-EAD
+https://www.futureautomation.co.uk/Product/Details/WB-EAD-S
+https://www.futureautomation.co.uk/Product/Details/WB-EAL
+https://www.futureautomation.co.uk/Product/Details/WB-FSA1
+https://www.futureautomation.co.uk/Product/Details/WB-FSA2
+GROUP - WALL BOX BLANKING PLATES
+https://www.futureautomation.co.uk/Product/Details/WB-BCP
+https://www.futureautomation.co.uk/Product/Details/WB-VCP
+https://www.futureautomation.co.uk/Product/Details/WB-2S-BCP
+
+TITLE - MOTORISED ARTICULATING WALL MOUNT GUIDE
+GROUP - INDOOR
+https://www.futureautomation.co.uk/Product/Details/FSE90
+https://www.futureautomation.co.uk/Product/Details/PSE90
+https://www.futureautomation.co.uk/Product/Details/HSE90
+https://www.futureautomation.co.uk/Product/Details/QA2
+https://www.futureautomation.co.uk/Product/Details/QA2-60
+https://www.futureautomation.co.uk/Product/Details/HQA2
+https://www.futureautomation.co.uk/Product/Details/IW-PTL
+GROUP - MARINE INDOOR
+https://www.futureautomation.co.uk/Product/Details/QA2-M
+https://www.futureautomation.co.uk/Product/Details/QA2-60-M
+https://www.futureautomation.co.uk/Product/Details/M-PSE90
+GROUP - OUTDOOR / MARINE OUTDOOR
+https://www.futureautomation.co.uk/Product/Details/QA2-MO
+https://www.futureautomation.co.uk/Product/Details/QA2-60-MO
+
+TITLE - SLIDING PANEL SYSTEM GUIDE
+https://www.futureautomation.co.uk/Product/Details/SPS-V
+https://www.futureautomation.co.uk/Product/Details/SPS-VS
+https://www.futureautomation.co.uk/Product/Details/SPS-HZ
+https://www.futureautomation.co.uk/Product/Details/SPS-HZS
+https://www.futureautomation.co.uk/Product/Details/SPS-V-QA
+https://www.futureautomation.co.uk/Product/Details/SPS-VS-QA
+https://www.futureautomation.co.uk/Product/Details/SPS-HZ-QA
+https://www.futureautomation.co.uk/Product/Details/SPS-HZS-QA
+
+TITLE - CEILING MOUNT GUIDE
+https://www.futureautomation.co.uk/Product/Details/CM
+https://www.futureautomation.co.uk/Product/Details/CM-BLK
+https://www.futureautomation.co.uk/Product/Details/CME
+https://www.futureautomation.co.uk/Product/Details/CM-MO
+
+TITLE - FIREPLACE DISPLAY MOUNT GUIDE
+https://www.futureautomation.co.uk/Product/Details/EAD
+https://www.futureautomation.co.uk/Product/Details/EAD-S
+https://www.futureautomation.co.uk/Product/Details/EAL
+https://www.futureautomation.co.uk/Product/Details/WB-EAD
+https://www.futureautomation.co.uk/Product/Details/WB-EAD-S
+https://www.futureautomation.co.uk/Product/Details/WB-EAL
+
+TITLE - MOTORISED DISPLAY LIFTING GUIDE
+https://www.futureautomation.co.uk/Product/Details/LSL
+https://www.futureautomation.co.uk/Product/Details/LSL-EFA
+https://www.futureautomation.co.uk/Product/Details/LSM
+https://www.futureautomation.co.uk/Product/Details/LSM-EFA
+https://www.futureautomation.co.uk/Product/Details/LSH
+https://www.futureautomation.co.uk/Product/Details/LSM-TU
+https://www.futureautomation.co.uk/Product/Details/AL675
+https://www.futureautomation.co.uk/Product/Details/AL965
+https://www.futureautomation.co.uk/Product/Details/TSL
+https://www.futureautomation.co.uk/Product/Details/TSLH
+https://www.futureautomation.co.uk/Product/Details/TSL-MO
+https://www.futureautomation.co.uk/Product/Details/LSH-MO
+https://www.futureautomation.co.uk/Product/Details/PL
+https://www.futureautomation.co.uk/Product/Details/ML
+https://www.futureautomation.co.uk/Product/Details/SRV-SBL
+
+TITLE - CEILING HINGE RANGE GUIDE
 GROUP - INDOOR RESIDENTIAL
 https://www.futureautomation.co.uk/Product/Details/CHR
 https://www.futureautomation.co.uk/Product/Details/CHRS
@@ -272,39 +527,19 @@ https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
         <button type="button" onclick="printPage()" class='styled-button'>EXPORT AS PDF</button>
         <div class="checkbox-container">
             <input type="checkbox" id="splitProductCodes" name="splitProductCodes">
-            <label for="splitProductCodes">Split Product Codes</label>
+            <label for="splitProductCodes">Split All Product Codes</label>
         </div>
         <div class="progress-container" id="progressContainer">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        <div class="button-container"></div>
-        <div class="a4-container" id="a4Container">
-            <img src="https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg" alt="Logo" class="logo">
-            <div class="title" id="pageTitle"></div>
-            <div class="contact-info">
-                <b>UK</b> 01438 833 577<br>
-                <b>USA</b> 603.742.9181<br>
-                info@futureautomation.net
-            </div>
-            <div id="tableWrapper">
-                <table id="infoTable">
-                    <thead><tr><th>SPECIFICATION</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div class="footer">
-                www.<b>FUTUREAUTOMATION</b>.net<br>
-                Future Sound and Vision Ltd. Registered in England. Company Number: 05124376.<br>
-                Registered Office: Unit 2 Kimpton Enterprise Park, Claggy Road, Kimpton, Herts, SG4 8HP
-            </div>
-        </div>
+        <div class="button-container" id="buttonContainer"></div>
+        <div id="pagesContainer"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
 const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
 const delayBetweenRequests = 1000;
 const allSpecifications = {};
-const productDataList = [];
 let previousUrls = [];
 let toggleStates = {};
 let lastUrlInput = '';
@@ -423,10 +658,8 @@ function adjustTitleFontSize(titleElement, text) {
     titleElement.style.fontSize = `${fontSize}pt`;
 }
 
-function updateRowColors() {
-    const table = document.getElementById('infoTable');
+function updateRowColors(table) {
     const visibleRows = Array.from(table.querySelectorAll('tbody tr')).filter(tr => tr.style.display !== 'none');
-    
     visibleRows.forEach((row, index) => {
         row.classList.remove('grey-row', 'white-row');
         if (index % 2 === 0) {
@@ -437,66 +670,126 @@ function updateRowColors() {
     });
 }
 
-async function updateTable() {
-    productDataList.length = 0;
-
+async function updateTables() {
     const urlInput = document.getElementById('urlInput').value;
     const splitProductCodes = document.getElementById('splitProductCodes').checked;
     const lines = urlInput.split('\n').map(line => line.trim()).filter(line => line !== '');
-    let title = '';
-    const groups = [];
-    let currentGroup = null;
-    const urls = [];
+    
+    const pages = [];
+    let currentPage = null;
+    
+    // Parse input lines to create pages
     lines.forEach(line => {
-        if (line.startsWith('TITLE - ')) {
-            title = line.replace('TITLE - ', '').trim();
+        if (line.startsWith('TITLE -')) {
+            // Save the previous page if it exists
+            if (currentPage) {
+                pages.push(currentPage);
+            }
+            // Start a new page, even if title is empty
+            currentPage = {
+                title: line.replace('TITLE -', '').trim(), // Allow empty title
+                groups: [],
+                urls: []
+            };
         } else if (line.startsWith('GROUP - ')) {
-            if (currentGroup) groups.push(currentGroup);
-            currentGroup = { name: line.replace('GROUP - ', '').trim(), urls: [] };
-        } else if (line.startsWith('http')) {
-            if (currentGroup) currentGroup.urls.push(line);
-            else urls.push(line);
+            if (!currentPage) {
+                // If no TITLE yet, create a default page
+                currentPage = { title: '', groups: [], urls: [] };
+            }
+            currentPage.groups.push({
+                name: line.replace('GROUP - ', '').trim(),
+                urls: []
+            });
+        } else if (line.startsWith('http') || line.startsWith('SPLIT - ')) {
+            if (!currentPage) {
+                // If no TITLE yet, create a default page
+                currentPage = { title: '', groups: [], urls: [] };
+            }
+            const url = line.startsWith('SPLIT - ') ? line.replace('SPLIT - ', '').trim() : line;
+            const shouldSplit = line.startsWith('SPLIT - ') ? true : splitProductCodes;
+            const currentGroup = currentPage.groups.length > 0 ? currentPage.groups[currentPage.groups.length - 1] : null;
+            if (currentGroup) {
+                currentGroup.urls.push({ url, shouldSplit });
+            } else {
+                currentPage.urls.push({ url, shouldSplit });
+            }
         }
     });
-    if (currentGroup) groups.push(currentGroup);
-    const effectiveUrls = groups.length > 0 ? groups.flatMap(g => g.urls) : urls;
-    previousUrls = effectiveUrls;
     
+    // Push the last page if it exists
+    if (currentPage) {
+        pages.push(currentPage);
+    }
+    
+    // If no pages were created, ensure at least one page exists
+    if (pages.length === 0) {
+        pages.push({ title: '', groups: [], urls: [] });
+    }
+
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     progressContainer.style.display = 'block';
     progressBar.style.width = '0%';
     
-    const tbody = document.getElementById('infoTable').querySelector('tbody');
-    const thead = document.getElementById('infoTable').querySelector('thead');
-    const buttonContainer = document.querySelector('.button-container');
-    const titleElement = document.getElementById('pageTitle');
-    tbody.innerHTML = '';
-    thead.innerHTML = '<tr><th>SPECIFICATION</th></tr>';
+    const pagesContainer = document.getElementById('pagesContainer');
+    const buttonContainer = document.getElementById('buttonContainer');
+    pagesContainer.innerHTML = '';
     buttonContainer.innerHTML = '';
-    titleElement.textContent = title;
-    if (title) adjustTitleFontSize(titleElement, title);
-    else titleElement.style.fontSize = '';
     
-    const totalUrls = effectiveUrls.length;
+    const totalUrls = pages.reduce((sum, page) => sum + (page.groups.flatMap(g => g.urls).length + page.urls.length), 0);
     let processedUrls = 0;
     
-    for (const url of effectiveUrls) {
-        let productData = await scrapeProductData(url);
-        productDataList.push(productData);
-        processedUrls++;
-        const progressPercentage = (processedUrls / totalUrls) * 100;
-        progressBar.style.width = `${progressPercentage}%`;
-        await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
-    }
-    
-    progressContainer.style.display = 'none';
-    
-    let expandedProductDataList = [];
-    let productCodeToUrl = {};
-    if (splitProductCodes) {
+    for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+        const page = pages[pageIndex];
+        const productDataList = [];
+        const effectiveUrls = page.groups.length > 0 ? page.groups.flatMap(g => g.urls) : page.urls;
+        
+        for (const { url, shouldSplit } of effectiveUrls) {
+            let productData = await scrapeProductData(url);
+            productData.shouldSplit = shouldSplit;
+            productDataList.push(productData);
+            processedUrls++;
+            const progressPercentage = (processedUrls / totalUrls) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
+        }
+        
+        const a4Container = document.createElement('div');
+        a4Container.classList.add('a4-container');
+        a4Container.innerHTML = `
+            <img src="https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg" alt="Logo" class="logo">
+            <div class="title" id="pageTitle${pageIndex}">${page.title || ''}</div>
+            <div class="contact-info">
+                <b>UK</b> 01438 833 577<br>
+                <b>USA</b> 603.742.9181<br>
+                info@futureautomation.net
+            </div>
+            <div class="table-wrapper" id="tableWrapper${pageIndex}">
+                <table id="infoTable${pageIndex}">
+                    <thead><tr><th>SPECIFICATION</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="footer">
+                www.<b>FUTUREAUTOMATION</b>.net<br>
+                Future Sound and Vision Ltd. Registered in England. Company Number: 05124376.<br>
+                Registered Office: Unit 2 Kimpton Enterprise Park, Claggy Road, Kimpton, Herts, SG4 8HP
+            </div>
+        `;
+        pagesContainer.appendChild(a4Container);
+        
+        const titleElement = document.getElementById(`pageTitle${pageIndex}`);
+        if (page.title) adjustTitleFontSize(titleElement, page.title);
+        else titleElement.style.fontSize = '12pt';
+        
+        const tbody = document.getElementById(`infoTable${pageIndex}`).querySelector('tbody');
+        const thead = document.getElementById(`infoTable${pageIndex}`).querySelector('thead');
+        
+        let expandedProductDataList = [];
+        let productCodeToUrl = {};
         productDataList.forEach(product => {
-            if (product.subcodes.length > 1) {
+            const useSplit = product.shouldSplit;
+            if (useSplit && product.subcodes.length > 1) {
                 product.subcodes.forEach(subcode => {
                     const newProduct = { ...product, subcodes: [subcode], productName: subcode };
                     const newSpecifications = {};
@@ -515,172 +808,179 @@ async function updateTable() {
                 productCodeToUrl[product.subcodes[0] || product.productName] = product.url;
             }
         });
-    } else {
-        expandedProductDataList = [...productDataList];
-        productDataList.forEach(product => {
-            productCodeToUrl[product.productName] = product.url;
-        });
-    }
 
-    expandedProductDataList.forEach(product => {
-        const th = document.createElement('th');
-        const a = document.createElement('a');
-        const productCode = splitProductCodes ? (product.subcodes[0] || product.productName) : product.productName;
-        a.href = productCodeToUrl[productCode] || product.url;
-        a.textContent = productCode;
-        th.appendChild(a);
-        thead.children[0].appendChild(th);
-    });
-    
-    if (groups.length > 0) {
-        const groupRow = document.createElement('tr');
-        groupRow.classList.add('group-row');
-        const emptyTh = document.createElement('th');
-        groupRow.appendChild(emptyTh);
-        groups.forEach(group => {
-            let groupProductCount = 0;
-            group.urls.forEach(url => {
-                const product = productDataList.find(p => p.url === url);
-                if (product && splitProductCodes) {
-                    groupProductCount += product.subcodes.length;
-                } else {
-                    groupProductCount += 1;
-                }
-            });
+        expandedProductDataList.forEach(product => {
             const th = document.createElement('th');
-            th.textContent = group.name;
-            th.colSpan = groupProductCount;
-            groupRow.appendChild(th);
+            const a = document.createElement('a');
+            const productCode = product.shouldSplit ? (product.subcodes[0] || product.productName) : product.productName;
+            a.href = productCodeToUrl[productCode] || product.url;
+            a.textContent = productCode;
+            th.appendChild(a);
+            thead.children[0].appendChild(th);
         });
-        thead.insertBefore(groupRow, thead.children[0]);
-    }
-    
-    const imageRow = document.createElement('tr');
-    const imageCell = document.createElement('td');
-    imageCell.textContent = 'PRODUCT IMAGE';
-    imageRow.appendChild(imageCell);
-    expandedProductDataList.forEach(product => {
-        const imgCell = document.createElement('td');
-        const img = document.createElement('img');
-        img.src = product.productImage;
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-        imgCell.appendChild(img);
-        imageRow.appendChild(imgCell);
-    });
-    tbody.appendChild(imageRow);
-    
-    const firstImageCell = imageRow.querySelector('td:nth-child(2)');
-    if (firstImageCell) {
-        const cellWidth = firstImageCell.offsetWidth;
-        imageRow.style.height = `${cellWidth}px`;
-        imageRow.querySelectorAll('td').forEach(cell => cell.style.height = `${cellWidth}px`);
-    }
-    
-    const allSpecs = new Set();
-    expandedProductDataList.forEach(product => {
-        Object.keys(product.specifications).forEach(spec => allSpecs.add(spec));
-    });
-    
-    const rows = [];
-    let techSheetRow = null;
-    const buttons = [];
-    let techSheetButton = null;
-    
-    allSpecs.forEach(spec => {
-        const specUpper = spec.toUpperCase();
-        if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) return;
-
-        const tr = document.createElement('tr');
-        const tdSpec = document.createElement('td');
-        tdSpec.textContent = spec;
-        tr.appendChild(tdSpec);
-
-        expandedProductDataList.forEach((product, index) => {
-            const tdValue = document.createElement('td');
-            let values = product.specifications[spec] || [];
-            if (!splitProductCodes) {
-                values = selectCompactValue(values, spec, product.productName);
-            }
-            values = simplifySizes(values, spec, splitProductCodes);
-            
-            if (values.length === 0) {
-                tdValue.innerHTML = 'N/A';
-            } else {
-                if (splitProductCodes) {
-                    tdValue.innerHTML = `<div class="cell-value">${values[0]?.value || 'N/A'}</div>`;
-                } else {
-                    const valueGroups = {};
-                    values.forEach(item => {
-                        const valueKey = item.value;
-                        if (!valueGroups[valueKey]) {
-                            valueGroups[valueKey] = [];
-                        }
-                        valueGroups[valueKey].push(item.subcode);
-                    });
-
-                    const uniqueValues = Object.keys(valueGroups);
-                    const isSingleValue = uniqueValues.length === 1;
-
-                    if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
-                        tdValue.innerHTML = values.map(item => item.value).join(' ');
-                    } else if (specUpper === 'PRODUCT CODE') {
-                        tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
-                    } else if (isSingleValue) {
-                        tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
+        
+        if (page.groups.length > 0) {
+            const groupRow = document.createElement('tr');
+            groupRow.classList.add('group-row');
+            const emptyTh = document.createElement('th');
+            groupRow.appendChild(emptyTh);
+            page.groups.forEach(group => {
+                let groupProductCount = 0;
+                group.urls.forEach(({ url }) => {
+                    const product = productDataList.find(p => p.url === url);
+                    if (product && product.shouldSplit) {
+                        groupProductCount += product.subcodes.length;
                     } else {
-                        const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
-                            return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
-                        });
-                        tdValue.innerHTML = formattedValues.join('');
+                        groupProductCount += 1;
                     }
-                }
-            }
-            
-            tr.appendChild(tdValue);
+                });
+                const th = document.createElement('th');
+                th.textContent = group.name;
+                th.colSpan = groupProductCount;
+                groupRow.appendChild(th);
+            });
+            thead.insertBefore(groupRow, thead.children[0]);
+        }
+        
+        const imageRow = document.createElement('tr');
+        const imageCell = document.createElement('td');
+        imageCell.textContent = 'PRODUCT IMAGE';
+        imageRow.appendChild(imageCell);
+        expandedProductDataList.forEach(product => {
+            const imgCell = document.createElement('td');
+            const img = document.createElement('img');
+            img.src = product.productImage;
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            imgCell.appendChild(img);
+            imageRow.appendChild(imgCell);
         });
-
-        if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
-            techSheetRow = tr;
-        } else {
-            rows.push(tr);
+        tbody.appendChild(imageRow);
+        
+        const firstImageCell = imageRow.querySelector('td:nth-child(2)');
+        if (firstImageCell) {
+            const cellWidth = firstImageCell.offsetWidth;
+            imageRow.style.height = `${cellWidth}px`;
+            imageRow.querySelectorAll('td').forEach(cell => cell.style.height = `${cellWidth}px`);
         }
+        
+        const allSpecs = new Set();
+        expandedProductDataList.forEach(product => {
+            Object.keys(product.specifications).forEach(spec => allSpecs.add(spec));
+        });
+        
+        const rows = [];
+        let techSheetRow = null;
+        const buttons = [];
+        let techSheetButton = null;
+        
+		const defaultHiddenSpecs = ['DOWNLOADS', 'EXAMPLE TECHNICAL SHEETS', 'SHIPPING DIMENSIONS', 'VIDEO INSTRUCTIONS', 'SHIPPING WEIGHT', 'WHAT\'S INCLUDED'];
 
-        const button = document.createElement('button');
-        button.textContent = `${spec}`;
-        button.classList.add('toggle-button');
+		allSpecs.forEach(spec => {
+			const specUpper = spec.toUpperCase();
+			if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) return;
 
-        button.onclick = () => {
-            tr.style.display = tr.style.display === 'none' ? '' : 'none';
-            button.classList.toggle('active');
-            adjustFontSizeBasedOnTableContent();
-            updateRowColors();
-        };
+			const tr = document.createElement('tr');
+			const tdSpec = document.createElement('td');
+			tdSpec.textContent = spec;
+			tr.appendChild(tdSpec);
 
-        if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
-            techSheetButton = button;
-        } else {
-            buttons.push(button);
-        }
-    });
+			if (defaultHiddenSpecs.includes(specUpper)) {
+				tr.style.display = 'none';
+			}
+
+			expandedProductDataList.forEach((product, index) => {
+				const tdValue = document.createElement('td');
+				let values = product.specifications[spec] || [];
+				if (!product.shouldSplit) {
+					values = selectCompactValue(values, spec, product.productName);
+				}
+				values = simplifySizes(values, spec, product.shouldSplit);
+				
+				if (values.length === 0) {
+					tdValue.innerHTML = 'N/A';
+				} else {
+					if (product.shouldSplit) {
+						tdValue.innerHTML = `<div class="cell-value">${values[0]?.value || 'N/A'}</div>`;
+					} else {
+						const valueGroups = {};
+						values.forEach(item => {
+							const valueKey = item.value;
+							if (!valueGroups[valueKey]) {
+								valueGroups[valueKey] = [];
+							}
+							valueGroups[valueKey].push(item.subcode);
+						});
+
+						const uniqueValues = Object.keys(valueGroups);
+						const isSingleValue = uniqueValues.length === 1;
+
+						if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
+							tdValue.innerHTML = values.map(item => item.value).join(' ');
+						} else if (specUpper === 'PRODUCT CODE') {
+							tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
+						} else if (isSingleValue) {
+							tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
+						} else {
+							const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
+								return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
+							});
+							tdValue.innerHTML = formattedValues.join('');
+						}
+					}
+				}
+				
+				tr.appendChild(tdValue);
+			});
+
+			if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
+				techSheetRow = tr;
+			} else {
+				rows.push(tr);
+			}
+
+			const button = document.createElement('button');
+			button.textContent = `${spec}`;
+			button.classList.add('toggle-button');
+			button.dataset.pageIndex = pageIndex;
+
+			if (defaultHiddenSpecs.includes(specUpper)) {
+				button.classList.add('active');
+			}
+
+			button.onclick = () => {
+				tr.style.display = tr.style.display === 'none' ? '' : 'none';
+				button.classList.toggle('active');
+				adjustFontSizeBasedOnTableContent(pageIndex);
+				updateRowColors(document.getElementById(`infoTable${pageIndex}`));
+			};
+
+			if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
+				techSheetButton = button;
+			} else {
+				buttons.push(button);
+			}
+		});
+        
+        rows.forEach(row => tbody.appendChild(row));
+        
+        if (techSheetRow) tbody.appendChild(techSheetRow);
+        
+        buttons.forEach(button => buttonContainer.appendChild(button));
+        
+        if (techSheetButton) buttonContainer.appendChild(techSheetButton);
+        
+        updateRowColors(document.getElementById(`infoTable${pageIndex}`));
+        adjustFontSizeBasedOnTableContent(pageIndex);
+    }
     
-    rows.forEach(row => tbody.appendChild(row));
-    
-    if (techSheetRow) tbody.appendChild(techSheetRow);
-    
-    buttons.forEach(button => buttonContainer.appendChild(button));
-    
-    if (techSheetButton) buttonContainer.appendChild(techSheetButton);
-    
-    updateRowColors();
-    adjustFontSizeBasedOnTableContent();
-    
+    progressContainer.style.display = 'none';
     document.getElementById('generateButton').disabled = true;
 }
 
-function adjustFontSizeBasedOnTableContent() {
-    const table = document.getElementById('infoTable');
-    const tableWrapper = document.getElementById('tableWrapper');
+function adjustFontSizeBasedOnTableContent(pageIndex) {
+    const table = document.getElementById(`infoTable${pageIndex}`);
+    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
     if (!table || !tableWrapper) return;
     const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
     if (visibleRows.length === 0) return;
@@ -729,20 +1029,21 @@ function adjustFontSizeBasedOnTableContent() {
     if (groupRow && specRow) {
         groupRow.style.height = `${specRow.offsetHeight}px`;
     }
-    updateRowColors();
+    updateRowColors(table);
 }
 
-function setupTableObserver() {
-    const table = document.getElementById('infoTable');
-    if (!table) return;
-    const observer = new MutationObserver(() => adjustFontSizeBasedOnTableContent());
-    observer.observe(table, { childList: true, subtree: true });
+function setupTableObservers() {
+    const tables = document.querySelectorAll('table[id^="infoTable"]');
+    tables.forEach((table, index) => {
+        const observer = new MutationObserver(() => adjustFontSizeBasedOnTableContent(index));
+        observer.observe(table, { childList: true, subtree: true });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupTableObserver();
+    setupTableObservers();
     document.getElementById('generateButton').addEventListener('click', () => {
-        updateTable();
+        updateTables();
         lastUrlInput = document.getElementById('urlInput').value;
         document.getElementById('generateButton').disabled = true;
     });
@@ -751,9 +1052,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('generateButton').disabled = currentUrlInput === lastUrlInput;
     });
     document.getElementById('splitProductCodes').addEventListener('change', () => {
-        if (productDataList.length > 0) {
-            document.getElementById('generateButton').disabled = false;
-        }
+        document.getElementById('generateButton').disabled = false;
     });
 });
 </script>
