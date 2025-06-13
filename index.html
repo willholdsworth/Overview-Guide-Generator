@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
- <style>
+    <style>
 body {
     font-family: Open Sans, sans-serif;
     margin: 0;
@@ -222,6 +222,41 @@ td a {
     transition: width 0.3s ease-in-out;
 }
 
+.dropdown-toggle {
+    padding: 5px 10px;
+    background-color: lightgrey;
+    color: black;
+    border: 2px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    display: inline-block;
+    position: relative;
+    padding-right: 30px;
+}
+
+.dropdown-toggle::after {
+    content: '▼';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+}
+
+.dropdown-toggle.active::after {
+    content: '▲';
+}
+
+.dropdown-content {
+    display: none;
+    margin-bottom: 10px;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
 @media print {
     * {
         -webkit-print-color-adjust: exact !important;
@@ -245,7 +280,15 @@ td a {
     .container > button,
     .container > .checkbox-container,
     .container > .progress-container,
-    .container > .button-container {
+    .container > .dropdown-toggle,
+    .container > .dropdown-content {
+        display: none !important;
+    }
+    
+    .dropdown-toggle,
+    .dropdown-content,
+    .page-wrapper > .dropdown-toggle,
+    .page-wrapper > .dropdown-content {
         display: none !important;
     }
     
@@ -537,7 +580,6 @@ https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
         <div class="progress-container" id="progressContainer">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        <div class="button-container" id="buttonContainer"></div>
         <div id="pagesContainer"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -686,19 +728,16 @@ async function updateTables() {
     // Parse input lines to create pages
     lines.forEach(line => {
         if (line.startsWith('TITLE -')) {
-            // Save the previous page if it exists
             if (currentPage) {
                 pages.push(currentPage);
             }
-            // Start a new page, even if title is empty
             currentPage = {
-                title: line.replace('TITLE -', '').trim(), // Allow empty title
+                title: line.replace('TITLE -', '').trim(),
                 groups: [],
                 urls: []
             };
         } else if (line.startsWith('GROUP - ')) {
             if (!currentPage) {
-                // If no TITLE yet, create a default page
                 currentPage = { title: '', groups: [], urls: [] };
             }
             currentPage.groups.push({
@@ -707,7 +746,6 @@ async function updateTables() {
             });
         } else if (line.startsWith('http') || line.startsWith('SPLIT - ')) {
             if (!currentPage) {
-                // If no TITLE yet, create a default page
                 currentPage = { title: '', groups: [], urls: [] };
             }
             const url = line.startsWith('SPLIT - ') ? line.replace('SPLIT - ', '').trim() : line;
@@ -721,12 +759,10 @@ async function updateTables() {
         }
     });
     
-    // Push the last page if it exists
     if (currentPage) {
         pages.push(currentPage);
     }
     
-    // If no pages were created, ensure at least one page exists
     if (pages.length === 0) {
         pages.push({ title: '', groups: [], urls: [] });
     }
@@ -737,9 +773,7 @@ async function updateTables() {
     progressBar.style.width = '0%';
     
     const pagesContainer = document.getElementById('pagesContainer');
-    const buttonContainer = document.getElementById('buttonContainer');
     pagesContainer.innerHTML = '';
-    buttonContainer.innerHTML = '';
     
     const totalUrls = pages.reduce((sum, page) => sum + (page.groups.flatMap(g => g.urls).length + page.urls.length), 0);
     let processedUrls = 0;
@@ -758,6 +792,26 @@ async function updateTables() {
             progressBar.style.width = `${progressPercentage}%`;
             await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
         }
+        
+        const pageWrapper = document.createElement('div');
+        pageWrapper.classList.add('page-wrapper');
+        
+        const dropdownToggle = document.createElement('button');
+        dropdownToggle.classList.add('dropdown-toggle');
+        dropdownToggle.textContent = 'CATEGORIES';
+        dropdownToggle.dataset.pageIndex = pageIndex;
+        
+        const dropdownContent = document.createElement('div');
+        dropdownContent.classList.add('dropdown-content');
+        dropdownContent.id = `buttonContainer${pageIndex}`;
+        
+        dropdownToggle.onclick = () => {
+            dropdownContent.classList.toggle('show');
+            dropdownToggle.classList.toggle('active');
+        };
+        
+        pageWrapper.appendChild(dropdownToggle);
+        pageWrapper.appendChild(dropdownContent);
         
         const a4Container = document.createElement('div');
         a4Container.classList.add('a4-container');
@@ -781,7 +835,8 @@ async function updateTables() {
                 Registered Office: Unit 2 Kimpton Enterprise Park, Claggy Road, Kimpton, Herts, SG4 8HP
             </div>
         `;
-        pagesContainer.appendChild(a4Container);
+        pageWrapper.appendChild(a4Container);
+        pagesContainer.appendChild(pageWrapper);
         
         const titleElement = document.getElementById(`pageTitle${pageIndex}`);
         if (page.title) adjustTitleFontSize(titleElement, page.title);
@@ -879,98 +934,99 @@ async function updateTables() {
         const buttons = [];
         let techSheetButton = null;
         
-		const defaultHiddenSpecs = ['DOWNLOADS', 'EXAMPLE TECHNICAL SHEETS', 'SHIPPING DIMENSIONS', 'VIDEO INSTRUCTIONS', 'SHIPPING WEIGHT', 'WHAT\'S INCLUDED'];
+        const defaultHiddenSpecs = ['DOWNLOADS', 'EXAMPLE TECHNICAL SHEETS', 'SHIPPING DIMENSIONS', 'VIDEO INSTRUCTIONS', 'SHIPPING WEIGHT', 'WHAT\'S INCLUDED'];
 
-		allSpecs.forEach(spec => {
-			const specUpper = spec.toUpperCase();
-			if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) return;
+        allSpecs.forEach(spec => {
+            const specUpper = spec.toUpperCase();
+            if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) return;
 
-			const tr = document.createElement('tr');
-			const tdSpec = document.createElement('td');
-			tdSpec.textContent = spec;
-			tr.appendChild(tdSpec);
+            const tr = document.createElement('tr');
+            const tdSpec = document.createElement('td');
+            tdSpec.textContent = spec;
+            tr.appendChild(tdSpec);
 
-			if (defaultHiddenSpecs.includes(specUpper)) {
-				tr.style.display = 'none';
-			}
+            if (defaultHiddenSpecs.includes(specUpper)) {
+                tr.style.display = 'none';
+            }
 
-			expandedProductDataList.forEach((product, index) => {
-				const tdValue = document.createElement('td');
-				let values = product.specifications[spec] || [];
-				if (!product.shouldSplit) {
-					values = selectCompactValue(values, spec, product.productName);
-				}
-				values = simplifySizes(values, spec, product.shouldSplit);
-				
-				if (values.length === 0) {
-					tdValue.innerHTML = 'N/A';
-				} else {
-					if (product.shouldSplit) {
-						tdValue.innerHTML = `<div class="cell-value">${values[0]?.value || 'N/A'}</div>`;
-					} else {
-						const valueGroups = {};
-						values.forEach(item => {
-							const valueKey = item.value;
-							if (!valueGroups[valueKey]) {
-								valueGroups[valueKey] = [];
-							}
-							valueGroups[valueKey].push(item.subcode);
-						});
+            expandedProductDataList.forEach((product, index) => {
+                const tdValue = document.createElement('td');
+                let values = product.specifications[spec] || [];
+                if (!product.shouldSplit) {
+                    values = selectCompactValue(values, spec, product.productName);
+                }
+                values = simplifySizes(values, spec, product.shouldSplit);
+                
+                if (values.length === 0) {
+                    tdValue.innerHTML = 'N/A';
+                } else {
+                    if (product.shouldSplit) {
+                        tdValue.innerHTML = `<div class="cell-value">${values[0]?.value || 'N/A'}</div>`;
+                    } else {
+                        const valueGroups = {};
+                        values.forEach(item => {
+                            const valueKey = item.value;
+                            if (!valueGroups[valueKey]) {
+                                valueGroups[valueKey] = [];
+                            }
+                            valueGroups[valueKey].push(item.subcode);
+                        });
 
-						const uniqueValues = Object.keys(valueGroups);
-						const isSingleValue = uniqueValues.length === 1;
+                        const uniqueValues = Object.keys(valueGroups);
+                        const isSingleValue = uniqueValues.length === 1;
 
-						if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
-							tdValue.innerHTML = values.map(item => item.value).join(' ');
-						} else if (specUpper === 'PRODUCT CODE') {
-							tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
-						} else if (isSingleValue) {
-							tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
-						} else {
-							const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
-								return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
-							});
-							tdValue.innerHTML = formattedValues.join('');
-						}
-					}
-				}
-				
-				tr.appendChild(tdValue);
-			});
+                        if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
+                            tdValue.innerHTML = values.map(item => item.value).join(' ');
+                        } else if (specUpper === 'PRODUCT CODE') {
+                            tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
+                        } else if (isSingleValue) {
+                            tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
+                        } else {
+                            const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
+                                return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
+                            });
+                            tdValue.innerHTML = formattedValues.join('');
+                        }
+                    }
+                }
+                
+                tr.appendChild(tdValue);
+            });
 
-			if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
-				techSheetRow = tr;
-			} else {
-				rows.push(tr);
-			}
+            if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
+                techSheetRow = tr;
+            } else {
+                rows.push(tr);
+            }
 
-			const button = document.createElement('button');
-			button.textContent = `${spec}`;
-			button.classList.add('toggle-button');
-			button.dataset.pageIndex = pageIndex;
+            const button = document.createElement('button');
+            button.textContent = `${spec}`;
+            button.classList.add('toggle-button');
+            button.dataset.pageIndex = pageIndex;
 
-			if (defaultHiddenSpecs.includes(specUpper)) {
-				button.classList.add('active');
-			}
+            if (defaultHiddenSpecs.includes(specUpper)) {
+                button.classList.add('active');
+            }
 
-			button.onclick = () => {
-				tr.style.display = tr.style.display === 'none' ? '' : 'none';
-				button.classList.toggle('active');
-				adjustFontSizeBasedOnTableContent(pageIndex);
-				updateRowColors(document.getElementById(`infoTable${pageIndex}`));
-			};
+            button.onclick = () => {
+                tr.style.display = tr.style.display === 'none' ? '' : 'none';
+                button.classList.toggle('active');
+                adjustFontSizeBasedOnTableContent(pageIndex);
+                updateRowColors(document.getElementById(`infoTable${pageIndex}`));
+            };
 
-			if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
-				techSheetButton = button;
-			} else {
-				buttons.push(button);
-			}
-		});
+            if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
+                techSheetButton = button;
+            } else {
+                buttons.push(button);
+            }
+        });
         
         rows.forEach(row => tbody.appendChild(row));
         
         if (techSheetRow) tbody.appendChild(techSheetRow);
         
+        const buttonContainer = document.getElementById(`buttonContainer${pageIndex}`);
         buttons.forEach(button => buttonContainer.appendChild(button));
         
         if (techSheetButton) buttonContainer.appendChild(techSheetButton);
