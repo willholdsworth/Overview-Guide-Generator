@@ -903,16 +903,34 @@ function createSectionTable(sectionData, sectionIndex, pageIndex) {
 
 function rebuildSectionTable(sectionIndex, pageIndex) {
     const sectionData = window.pageSections[pageIndex][sectionIndex];
+    const table = document.getElementById(`section${sectionIndex}_table${pageIndex}`);
+    
+    if (!table) return;
+    
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    
+    const existingRows = Array.from(tbody.querySelectorAll('tr'));
+    const imageRow = existingRows[0];
+    
+    existingRows.slice(1).forEach(row => {
+        const specCell = row.querySelector('td:first-child');
+        if (specCell) {
+            const spec = specCell.textContent.trim();
+            if (sectionData.specVisibility[spec]) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+    
+    updateRowColors(table);
+    
     const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
-    const oldTable = document.getElementById(`section${sectionIndex}_table${pageIndex}`);
-    const newTable = createSectionTable(sectionData, sectionIndex, pageIndex);
-    
-    if (oldTable) {
-        tableWrapper.replaceChild(newTable, oldTable);
+    if (tableWrapper) {
+        adjustFontSizeBasedOnTableContent(pageIndex);
     }
-    
-    setConsistentImageHeights(pageIndex);
-    adjustFontSizeBasedOnTableContent(pageIndex);
 }
 
 function setConsistentImageHeights(pageIndex) {
@@ -922,21 +940,66 @@ function setConsistentImageHeights(pageIndex) {
     const tables = tableWrapper.querySelectorAll('.section-table');
     if (tables.length === 0) return;
     
-    // If there's only one table, use the original logic
-    if (tables.length === 1) {
-        const firstImageCell = tables[0].querySelector('tbody tr:first-child td:nth-child(2)');
-        if (firstImageCell) {
-            const cellWidth = firstImageCell.offsetWidth;
-            const imageRow = tables[0].querySelector('tbody tr:first-child');
-            if (imageRow) {
-                imageRow.style.height = `${cellWidth}px`;
-                imageRow.querySelectorAll('td').forEach(cell => {
-                    cell.style.height = `${cellWidth}px`;
-                    cell.style.verticalAlign = 'middle';
+    // Store current image heights to check if recalculation is needed
+    const currentHeights = [];
+    tables.forEach(table => {
+        const imageRow = table.querySelector('tbody tr:first-child');
+        if (imageRow) {
+            currentHeights.push(imageRow.offsetHeight);
+        }
+    });
+    
+    // Only reset and recalculate if we don't have consistent heights already
+    const allHeightsSame = currentHeights.length > 1 && currentHeights.every(h => Math.abs(h - currentHeights[0]) <= 2);
+    if (allHeightsSame && currentHeights[0] > 0) {
+        return; // Heights are already consistent, no need to recalculate
+    }
+    
+    // Reset styles only when necessary
+    tables.forEach(table => {
+        const imageRow = table.querySelector('tbody tr:first-child');
+        if (imageRow) {
+            imageRow.style.height = '';
+            imageRow.querySelectorAll('td').forEach(cell => {
+                if (cell.querySelector('img')) {
+                    cell.style.height = '';
+                    cell.style.width = '';
+                    cell.style.minWidth = '';
+                    cell.style.maxWidth = '';
                     const img = cell.querySelector('img');
                     if (img) {
-                        img.style.maxWidth = '100%';
-                        img.style.height = 'auto';
+                        img.style.maxWidth = '';
+                        img.style.maxHeight = '';
+                        img.style.width = '';
+                        img.style.height = '';
+                        img.style.objectFit = '';
+                    }
+                }
+            });
+        }
+    });
+    
+    // Force reflow
+    tableWrapper.offsetHeight;
+    
+    if (tables.length === 1) {
+        const table = tables[0];
+        const imageRow = table.querySelector('tbody tr:first-child');
+        if (imageRow) {
+            const imageCells = imageRow.querySelectorAll('td');
+            if (imageCells.length > 1) {
+                const firstImageCell = imageCells[1];
+                const cellWidth = firstImageCell.offsetWidth;
+                imageRow.style.height = `${cellWidth}px`;
+                imageCells.forEach(cell => {
+                    if (cell.querySelector('img')) {
+                        cell.style.height = `${cellWidth}px`;
+                        cell.style.verticalAlign = 'middle';
+                        const img = cell.querySelector('img');
+                        if (img) {
+                            img.style.maxWidth = '100%';
+                            img.style.height = 'auto';
+                        }
                     }
                 });
             }
@@ -944,36 +1007,77 @@ function setConsistentImageHeights(pageIndex) {
         return;
     }
     
-    // For multiple tables (DIVIDER sections), find the smallest cell width and apply consistently
     let minCellWidth = Infinity;
     
     tables.forEach(table => {
-        const firstImageCell = table.querySelector('tbody tr:first-child td:nth-child(2)');
-        if (firstImageCell) {
-            const cellWidth = firstImageCell.offsetWidth;
-            minCellWidth = Math.min(minCellWidth, cellWidth);
+        const imageRow = table.querySelector('tbody tr:first-child');
+        if (imageRow) {
+            const imageCells = imageRow.querySelectorAll('td');
+            if (imageCells.length > 1) {
+                const firstImageCell = imageCells[1];
+                const cellWidth = firstImageCell.offsetWidth;
+                minCellWidth = Math.min(minCellWidth, cellWidth);
+            }
         }
     });
     
-    // Apply the minimum cell width as both width and height to all image cells for consistency
-    if (minCellWidth > 0 && minCellWidth !== Infinity) {
+    let needsConstraint = false;
+    tables.forEach(table => {
+        const imageRow = table.querySelector('tbody tr:first-child');
+        if (imageRow) {
+            const imageCells = imageRow.querySelectorAll('td');
+            if (imageCells.length > 1) {
+                const firstImageCell = imageCells[1];
+                if (Math.abs(firstImageCell.offsetWidth - minCellWidth) > 1) {
+                    needsConstraint = true;
+                }
+            }
+        }
+    });
+    
+    if (needsConstraint && minCellWidth > 0 && minCellWidth !== Infinity) {
         tables.forEach(table => {
             const imageRow = table.querySelector('tbody tr:first-child');
             if (imageRow) {
                 imageRow.style.height = `${minCellWidth}px`;
                 imageRow.querySelectorAll('td').forEach(cell => {
-                    cell.style.height = `${minCellWidth}px`;
-                    cell.style.width = `${minCellWidth}px`;
-                    cell.style.verticalAlign = 'middle';
-                    const img = cell.querySelector('img');
-                    if (img) {
-                        img.style.maxWidth = '100%';
-                        img.style.maxHeight = '100%';
-                        img.style.width = 'auto';
-                        img.style.height = 'auto';
-                        img.style.objectFit = 'contain';
+                    if (cell.querySelector('img')) {
+                        cell.style.height = `${minCellWidth}px`;
+                        cell.style.width = `${minCellWidth}px`;
+                        cell.style.verticalAlign = 'middle';
+                        const img = cell.querySelector('img');
+                        if (img) {
+                            img.style.maxWidth = '100%';
+                            img.style.maxHeight = '100%';
+                            img.style.width = 'auto';
+                            img.style.height = 'auto';
+                            img.style.objectFit = 'contain';
+                        }
                     }
                 });
+            }
+        });
+    } else {
+        tables.forEach(table => {
+            const imageRow = table.querySelector('tbody tr:first-child');
+            if (imageRow) {
+                const imageCells = imageRow.querySelectorAll('td');
+                if (imageCells.length > 1) {
+                    const firstImageCell = imageCells[1];
+                    const cellWidth = firstImageCell.offsetWidth;
+                    imageRow.style.height = `${cellWidth}px`;
+                    imageCells.forEach(cell => {
+                        if (cell.querySelector('img')) {
+                            cell.style.height = `${cellWidth}px`;
+                            cell.style.verticalAlign = 'middle';
+                            const img = cell.querySelector('img');
+                            if (img) {
+                                img.style.maxWidth = '100%';
+                                img.style.height = 'auto';
+                            }
+                        }
+                    });
+                }
             }
         });
     }
@@ -1245,7 +1349,27 @@ async function updateTables() {
                 button.onclick = () => {
                     sections[sectionIndex].specVisibility[spec] = !sections[sectionIndex].specVisibility[spec];
                     button.classList.toggle('active');
+                    
+                    // Disable transitions temporarily to prevent jolting
+                    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
+                    if (tableWrapper) {
+                        tableWrapper.style.transition = 'none';
+                        tableWrapper.querySelectorAll('*').forEach(el => {
+                            el.style.transition = 'none';
+                        });
+                    }
+                    
                     rebuildSectionTable(sectionIndex, pageIndex);
+                    
+                    // Re-enable transitions after a short delay
+                    setTimeout(() => {
+                        if (tableWrapper) {
+                            tableWrapper.style.transition = '';
+                            tableWrapper.querySelectorAll('*').forEach(el => {
+                                el.style.transition = '';
+                            });
+                        }
+                    }, 100);
                 };
                 
                 sectionControlsDiv.appendChild(button);
@@ -1257,8 +1381,12 @@ async function updateTables() {
         
         window.pageSections[pageIndex] = sections;
         
-        setConsistentImageHeights(pageIndex);
-        adjustFontSizeBasedOnTableContent(pageIndex);
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setConsistentImageHeights(pageIndex);
+                adjustFontSizeBasedOnTableContent(pageIndex);
+            }, 100);
+        });
     }
     
     progressContainer.style.display = 'none';
