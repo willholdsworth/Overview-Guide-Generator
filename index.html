@@ -922,47 +922,22 @@ function setConsistentImageHeights(pageIndex) {
     const tables = tableWrapper.querySelectorAll('.section-table');
     if (tables.length === 0) return;
     
-    let minImageHeight = Infinity;
-    
-    tables.forEach(table => {
-        const imageRow = table.querySelector('tbody tr:first-child');
+    const firstImageCell = tableWrapper.querySelector('tbody tr:first-child td:nth-child(2)');
+    if (firstImageCell) {
+        const cellWidth = firstImageCell.offsetWidth;
+        const imageRow = tableWrapper.querySelector('tbody tr:first-child');
         if (imageRow) {
-            imageRow.style.height = '';
-            Array.from(imageRow.children).forEach(cell => {
-                cell.style.height = '';
+            imageRow.style.height = `${cellWidth}px`;
+            imageRow.querySelectorAll('td').forEach(cell => {
+                cell.style.height = `${cellWidth}px`;
+                cell.style.verticalAlign = 'middle';
                 const img = cell.querySelector('img');
                 if (img) {
-                    img.style.height = '';
-                    img.style.maxHeight = '';
-                    img.style.width = 'auto';
-                    img.style.objectFit = 'contain';
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
                 }
             });
-            const rowHeight = imageRow.offsetHeight;
-            minImageHeight = Math.min(minImageHeight, rowHeight);
         }
-    });
-    
-    if (minImageHeight > 0 && minImageHeight !== Infinity) {
-        const imageHeight = `${minImageHeight - 4}px`;
-        tables.forEach(table => {
-            const imageRow = table.querySelector('tbody tr:first-child');
-            if (imageRow) {
-                imageRow.style.height = `${minImageHeight}px`;
-                Array.from(imageRow.children).forEach(cell => {
-                    cell.style.height = `${minImageHeight}px`;
-                    cell.style.verticalAlign = 'middle';
-                    const img = cell.querySelector('img');
-                    if (img) {
-                        img.style.height = imageHeight;
-                        img.style.width = 'auto';
-                        img.style.objectFit = 'contain';
-                        img.style.maxHeight = '';
-                        img.style.maxWidth = '100%';
-                    }
-                });
-            }
-        });
     }
 }
 
@@ -1253,37 +1228,22 @@ async function updateTables() {
 }
 
 function adjustFontSizeBasedOnTableContent(pageIndex) {
-    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
-    if (!tableWrapper) return;
-    
-    const tables = tableWrapper.querySelectorAll('.section-table');
+    const tables = document.querySelectorAll(`#tableWrapper${pageIndex} .section-table`);
     if (tables.length === 0) return;
     
-    const maxFontSize = 12;
-    const minFontSize = 3;
-    let optimalFontSize = maxFontSize;
-    
-    const wrapperHeight = tableWrapper.clientHeight;
-    const wrapperWidth = tableWrapper.clientWidth;
-    
     tables.forEach(table => {
-        const cells = table.querySelectorAll('th, td');
-        cells.forEach(cell => cell.style.fontSize = '');
-    });
-    
-    let totalTableWidth = 0;
-    tables.forEach(table => {
-        totalTableWidth += table.offsetWidth;
-    });
-    
-    if (totalTableWidth > wrapperWidth) {
-        const widthRatio = wrapperWidth / totalTableWidth;
-        optimalFontSize = Math.floor(optimalFontSize * widthRatio * 0.9);
-    }
-    
-    tables.forEach(table => {
+        const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
+        if (!tableWrapper) return;
+        
         const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
         if (visibleRows.length === 0) return;
+        
+        const cells = table.querySelectorAll('th, td');
+        const maxFontSize = 12;
+        const minFontSize = 3;
+        let optimalFontSize = maxFontSize;
+        
+        cells.forEach(cell => cell.style.fontSize = '');
         
         visibleRows.forEach(row => {
             const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
@@ -1315,28 +1275,24 @@ function adjustFontSizeBasedOnTableContent(pageIndex) {
                 optimalFontSize = Math.min(optimalFontSize, tdFontHeight);
             });
         });
-    });
-    
-    let maxTableHeight = 0;
-    tables.forEach(table => {
-        const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
-        const tableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
-        maxTableHeight = Math.max(maxTableHeight, tableHeight);
-    });
-    
-    if (maxTableHeight > wrapperHeight) {
-        const heightRatio = wrapperHeight / maxTableHeight;
-        const dampedRatio = Math.max(0.7, heightRatio);
-        optimalFontSize = Math.floor(optimalFontSize * dampedRatio);
-    }
-    
-    optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
-    
-    tables.forEach(table => {
-        const cells = table.querySelectorAll('th, td');
-        cells.forEach(cell => {
-            cell.style.fontSize = `${optimalFontSize}px`;
-        });
+        
+        const visibleTableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
+        const wrapperHeight = tableWrapper.clientHeight;
+        if (visibleTableHeight > wrapperHeight) {
+            const heightRatio = wrapperHeight / visibleTableHeight;
+            const dampedRatio = Math.max(0.71, heightRatio);
+            optimalFontSize = Math.floor(optimalFontSize * dampedRatio);
+            optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
+        }
+        
+        cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
+        
+        const groupRow = table.querySelector('.group-row');
+        const specRow = table.querySelector('thead tr:not(.group-row)');
+        if (groupRow && specRow) {
+            groupRow.style.height = `${specRow.offsetHeight}px`;
+        }
+        
         updateRowColors(table);
     });
 }
