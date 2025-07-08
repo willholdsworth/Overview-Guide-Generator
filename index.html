@@ -66,70 +66,76 @@ textarea {
     right: 20px;
     bottom: 70px;
     display: flex;
-    justify-content: center;
     overflow: hidden;
     border-top: 1px solid black;
     border-bottom: 1px solid black;
+    border-left: 1px solid black;
 }
 
-table {
-    width: 100%;
-    height: 100%;
+.section-table {
+    flex: 1;
     border-collapse: collapse;
     margin: 0;
     table-layout: fixed;
+    height: 100%;
 }
 
-table, th, td {
+.section-table:not(:first-child) {
+    border-left: 2px solid black;
+}
+
+.section-table th, .section-table td {
     border-right: 1px solid black;
     text-align: center;
-}
-
-th, td {
     padding: 2px;
     overflow: hidden;
 }
 
-th:last-child, td:last-child {
+.section-table th:last-child, .section-table td:last-child {
     border-right: none;
 }
 
-td:first-child, th {
+.section-table:last-child th:last-child, 
+.section-table:last-child td:last-child {
+    border-right: 1px solid black;
+}
+
+.section-table td:first-child, .section-table th {
     background-color: black;
     color: white;
 }
 
-th a {
+.section-table th a {
     color: white;
 }
 
-td.specifications {
+.section-table td.specifications {
     background-color: black;
     color: white;
     text-transform: uppercase;
 }
 
-td img {
+.section-table td img {
     display: block;
     margin: 0 auto;
     max-width: 100%;
     height: auto;
 }
 
-tr.grey-row {
+.section-table tr.grey-row {
     background-color: #f2f2f2;
 }
 
-tr.white-row {
+.section-table tr.white-row {
     background-color: white;
 }
 
-.group-row th {
+.section-table .group-row th {
     background-color: #707070;
     color: white;
 }
 
-.group-row th:first-child {
+.section-table .group-row th:first-child {
     background-color: black;
     color: white;
 }
@@ -175,6 +181,18 @@ tr.white-row {
 
 .button-container {
     margin-bottom: 20px;
+}
+
+.section-controls {
+    display: inline-block;
+    margin-right: 20px;
+    vertical-align: top;
+}
+
+.section-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
 }
 
 td a {
@@ -350,35 +368,41 @@ td a {
         bottom: 70px !important;
         border-top: 1px solid black !important;
         border-bottom: 1px solid black !important;
-        display: block !important;
+        border-left: 1px solid black !important;
+        display: flex !important;
         overflow: visible !important;
     }
     
-    table {
-        width: 100% !important;
+    .section-table {
+        flex: 1 !important;
         border-collapse: collapse !important;
         table-layout: fixed !important;
+        height: 100% !important;
         display: table !important;
     }
     
-    thead {
+    .section-table:not(:first-child) {
+        border-left: 2px solid black !important;
+    }
+    
+    .section-table thead {
         display: table-header-group !important;
     }
     
-    tbody {
+    .section-table tbody {
         display: table-row-group !important;
     }
     
-    tr {
+    .section-table tr {
         display: table-row !important;
         page-break-inside: avoid;
     }
     
-    tr[style*="display: none"] {
+    .section-table tr[style*="display: none"] {
         display: none !important;
     }
     
-    th, td {
+    .section-table th, .section-table td {
         display: table-cell !important;
         padding: 2px !important;
         border-right: 1px solid black !important;
@@ -386,39 +410,44 @@ td a {
         overflow: hidden !important;
     }
     
-    th:last-child, td:last-child {
+    .section-table th:last-child, .section-table td:last-child {
         border-right: none !important;
     }
     
-    td:first-child, th {
+    .section-table:last-child th:last-child, 
+    .section-table:last-child td:last-child {
+        border-right: 1px solid black !important;
+    }
+    
+    .section-table td:first-child, .section-table th {
         background-color: black !important;
         color: white !important;
     }
     
-    th a {
+    .section-table th a {
         color: white !important;
         text-decoration: underline !important;
     }
     
-    .group-row th {
+    .section-table .group-row th {
         background-color: #707070 !important;
         color: white !important;
     }
     
-    .group-row th:first-child {
+    .section-table .group-row th:first-child {
         background-color: black !important;
         color: white !important;
     }
     
-    .grey-row {
+    .section-table .grey-row {
         background-color: #f2f2f2 !important;
     }
     
-    .white-row {
+    .section-table .white-row {
         background-color: white !important;
     }
     
-    td img {
+    .section-table td img {
         display: block !important;
         margin: 0 auto !important;
         max-width: 100% !important;
@@ -585,7 +614,7 @@ https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
 const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
-const delayBetweenRequests = 220;
+const delayBetweenRequests = 200;
 const allSpecifications = {};
 let previousUrls = [];
 let toggleStates = {};
@@ -717,6 +746,217 @@ function updateRowColors(table) {
     });
 }
 
+function createSectionTable(sectionData, sectionIndex, pageIndex) {
+    const table = document.createElement('table');
+    table.classList.add('section-table');
+    table.id = `section${sectionIndex}_table${pageIndex}`;
+    
+    const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    
+    const productCount = sectionData.products.length;
+    const specColumnWidth = '10%';
+    const productColumnWidth = productCount > 0 ? `${75 / productCount}%` : '75%';
+    
+    const headerRow = document.createElement('tr');
+    const specHeader = document.createElement('th');
+    specHeader.textContent = 'SPECIFICATION';
+    specHeader.style.width = specColumnWidth;
+    headerRow.appendChild(specHeader);
+    
+    let hasGroupRows = false;
+    const groupRow = document.createElement('tr');
+    groupRow.classList.add('group-row');
+    const emptyGroupTh = document.createElement('th');
+    emptyGroupTh.style.width = specColumnWidth;
+    groupRow.appendChild(emptyGroupTh);
+    
+    if (sectionData.groups && sectionData.groups.length > 0) {
+        hasGroupRows = true;
+        sectionData.groups.forEach(group => {
+            const th = document.createElement('th');
+            th.textContent = group.name;
+            th.colSpan = group.productCount;
+            const groupWidth = `${(75 * group.productCount) / productCount}%`;
+            th.style.width = groupWidth;
+            groupRow.appendChild(th);
+        });
+    }
+    
+    sectionData.products.forEach(product => {
+        const th = document.createElement('th');
+        th.style.width = productColumnWidth;
+        const a = document.createElement('a');
+        const productCode = product.shouldSplit ? (product.subcodes[0] || product.productName) : product.productName;
+        a.href = product.url;
+        a.textContent = productCode;
+        th.appendChild(a);
+        headerRow.appendChild(th);
+    });
+    
+    if (hasGroupRows) {
+        thead.appendChild(groupRow);
+    }
+    thead.appendChild(headerRow);
+    
+    const imageRow = document.createElement('tr');
+    const imageCell = document.createElement('td');
+    imageCell.textContent = 'PRODUCT IMAGE';
+    imageCell.style.width = specColumnWidth;
+    imageRow.appendChild(imageCell);
+    
+    sectionData.products.forEach(product => {
+        const imgCell = document.createElement('td');
+        imgCell.style.width = productColumnWidth;
+        const img = document.createElement('img');
+        img.src = product.productImage;
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        imgCell.appendChild(img);
+        imageRow.appendChild(imgCell);
+    });
+    
+    tbody.appendChild(imageRow);
+    
+    const regularSpecs = sectionData.specs.filter(spec => {
+        const specUpper = spec.toUpperCase();
+        return specUpper !== 'TECH SHEET' && specUpper !== 'TECHNICAL SHEET';
+    });
+    const techSpecs = sectionData.specs.filter(spec => {
+        const specUpper = spec.toUpperCase();
+        return specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET';
+    });
+    
+    [...regularSpecs, ...techSpecs].forEach(spec => {
+        if (!sectionData.specVisibility[spec]) return;
+        
+        const tr = document.createElement('tr');
+        const tdSpec = document.createElement('td');
+        tdSpec.textContent = spec;
+        tdSpec.style.width = specColumnWidth;
+        tr.appendChild(tdSpec);
+        
+        sectionData.products.forEach(product => {
+            const tdValue = document.createElement('td');
+            tdValue.style.width = productColumnWidth;
+            let values = product.specifications[spec] || [];
+            
+            if (!product.shouldSplit) {
+                values = selectCompactValue(values, spec, product.productName);
+            }
+            values = simplifySizes(values, spec, product.shouldSplit);
+            
+            if (values.length === 0) {
+                tdValue.innerHTML = 'N/A';
+            } else {
+                const specUpper = spec.toUpperCase();
+                if (product.shouldSplit) {
+                    tdValue.innerHTML = `<div class="cell-value">${values[0]?.value || 'N/A'}</div>`;
+                } else {
+                    const valueGroups = {};
+                    values.forEach(item => {
+                        const valueKey = item.value;
+                        if (!valueGroups[valueKey]) {
+                            valueGroups[valueKey] = [];
+                        }
+                        valueGroups[valueKey].push(item.subcode);
+                    });
+
+                    const uniqueValues = Object.keys(valueGroups);
+                    const isSingleValue = uniqueValues.length === 1;
+
+                    if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
+                        tdValue.innerHTML = values.map(item => item.value).join(' ');
+                    } else if (specUpper === 'PRODUCT CODE') {
+                        tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
+                    } else if (isSingleValue) {
+                        tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
+                    } else {
+                        const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
+                            return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
+                        });
+                        tdValue.innerHTML = formattedValues.join('');
+                    }
+                }
+            }
+            
+            tr.appendChild(tdValue);
+        });
+        
+        tbody.appendChild(tr);
+    });
+    
+    updateRowColors(table);
+    return table;
+}
+
+function rebuildSectionTable(sectionIndex, pageIndex) {
+    const sectionData = window.pageSections[pageIndex][sectionIndex];
+    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
+    const oldTable = document.getElementById(`section${sectionIndex}_table${pageIndex}`);
+    const newTable = createSectionTable(sectionData, sectionIndex, pageIndex);
+    
+    if (oldTable) {
+        tableWrapper.replaceChild(newTable, oldTable);
+    }
+    
+    setConsistentImageHeights(pageIndex);
+    adjustFontSizeBasedOnTableContent(pageIndex);
+}
+
+function setConsistentImageHeights(pageIndex) {
+    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
+    if (!tableWrapper) return;
+    
+    const tables = tableWrapper.querySelectorAll('.section-table');
+    if (tables.length === 0) return;
+    
+    let minImageHeight = Infinity;
+    
+    tables.forEach(table => {
+        const imageRow = table.querySelector('tbody tr:first-child');
+        if (imageRow) {
+            imageRow.style.height = '';
+            Array.from(imageRow.children).forEach(cell => {
+                cell.style.height = '';
+                const img = cell.querySelector('img');
+                if (img) {
+                    img.style.height = '';
+                    img.style.maxHeight = '';
+                    img.style.width = 'auto';
+                    img.style.objectFit = 'contain';
+                }
+            });
+            const rowHeight = imageRow.offsetHeight;
+            minImageHeight = Math.min(minImageHeight, rowHeight);
+        }
+    });
+    
+    if (minImageHeight > 0 && minImageHeight !== Infinity) {
+        const imageHeight = `${minImageHeight - 4}px`;
+        tables.forEach(table => {
+            const imageRow = table.querySelector('tbody tr:first-child');
+            if (imageRow) {
+                imageRow.style.height = `${minImageHeight}px`;
+                Array.from(imageRow.children).forEach(cell => {
+                    cell.style.height = `${minImageHeight}px`;
+                    cell.style.verticalAlign = 'middle';
+                    const img = cell.querySelector('img');
+                    if (img) {
+                        img.style.height = imageHeight;
+                        img.style.width = 'auto';
+                        img.style.objectFit = 'contain';
+                        img.style.maxHeight = '';
+                        img.style.maxWidth = '100%';
+                    }
+                });
+            }
+        });
+    }
+}
+
 async function updateTables() {
     const urlInput = document.getElementById('urlInput').value;
     const splitProductCodes = document.getElementById('splitProductCodes').checked;
@@ -725,7 +965,6 @@ async function updateTables() {
     const pages = [];
     let currentPage = null;
     
-    // Parse input lines to create pages
     lines.forEach(line => {
         if (line.startsWith('TITLE -')) {
             if (currentPage) {
@@ -733,28 +972,55 @@ async function updateTables() {
             }
             currentPage = {
                 title: line.replace('TITLE -', '').trim(),
-                groups: [],
-                urls: []
+                sections: [{ groups: [], urls: [] }]
             };
+        } else if (line === 'DIVIDER') {
+            if (!currentPage) {
+                currentPage = { title: '', sections: [{ groups: [], urls: [] }] };
+            }
+            currentPage.sections.push({ groups: [], urls: [] });
         } else if (line.startsWith('GROUP - ')) {
             if (!currentPage) {
-                currentPage = { title: '', groups: [], urls: [] };
+                currentPage = { title: '', sections: [{ groups: [], urls: [] }] };
             }
-            currentPage.groups.push({
+            const currentSection = currentPage.sections[currentPage.sections.length - 1];
+            currentSection.groups.push({
                 name: line.replace('GROUP - ', '').trim(),
                 urls: []
             });
-        } else if (line.startsWith('http') || line.startsWith('SPLIT - ')) {
+        } else if (line.startsWith('http') || line.startsWith('SPLIT')) {
             if (!currentPage) {
-                currentPage = { title: '', groups: [], urls: [] };
+                currentPage = { title: '', sections: [{ groups: [], urls: [] }] };
             }
-            const url = line.startsWith('SPLIT - ') ? line.replace('SPLIT - ', '').trim() : line;
-            const shouldSplit = line.startsWith('SPLIT - ') ? true : splitProductCodes;
-            const currentGroup = currentPage.groups.length > 0 ? currentPage.groups[currentPage.groups.length - 1] : null;
-            if (currentGroup) {
-                currentGroup.urls.push({ url, shouldSplit });
+            
+            let url, shouldSplit, splitIndex = null;
+            
+            if (line.startsWith('SPLIT ')) {
+                const match = line.match(/^SPLIT (\d+) - (.+)$/);
+                if (match) {
+                    splitIndex = parseInt(match[1]) - 1;
+                    url = match[2].trim();
+                    shouldSplit = true;
+                } else if (line.startsWith('SPLIT - ')) {
+                    url = line.replace('SPLIT - ', '').trim();
+                    shouldSplit = true;
+                } else {
+                    url = line.replace('SPLIT', '').replace(/^[\s-]+/, '').trim();
+                    shouldSplit = splitProductCodes;
+                }
             } else {
-                currentPage.urls.push({ url, shouldSplit });
+                url = line;
+                shouldSplit = splitProductCodes;
+            }
+            
+            const currentSection = currentPage.sections[currentPage.sections.length - 1];
+            const currentGroup = currentSection.groups.length > 0 ? currentSection.groups[currentSection.groups.length - 1] : null;
+            const urlObject = { url, shouldSplit, splitIndex };
+            
+            if (currentGroup) {
+                currentGroup.urls.push(urlObject);
+            } else {
+                currentSection.urls.push(urlObject);
             }
         }
     });
@@ -764,7 +1030,7 @@ async function updateTables() {
     }
     
     if (pages.length === 0) {
-        pages.push({ title: '', groups: [], urls: [] });
+        pages.push({ title: '', sections: [{ groups: [], urls: [] }] });
     }
 
     const progressContainer = document.getElementById('progressContainer');
@@ -775,22 +1041,30 @@ async function updateTables() {
     const pagesContainer = document.getElementById('pagesContainer');
     pagesContainer.innerHTML = '';
     
-    const totalUrls = pages.reduce((sum, page) => sum + (page.groups.flatMap(g => g.urls).length + page.urls.length), 0);
+    const totalUrls = pages.reduce((sum, page) => 
+        sum + page.sections.reduce((sectionSum, section) => 
+            sectionSum + (section.groups.flatMap(g => g.urls).length + section.urls.length), 0), 0);
     let processedUrls = 0;
+    
+    window.pageSections = [];
     
     for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
         const page = pages[pageIndex];
-        const productDataList = [];
-        const effectiveUrls = page.groups.length > 0 ? page.groups.flatMap(g => g.urls) : page.urls;
+        const productDataMap = new Map();
         
-        for (const { url, shouldSplit } of effectiveUrls) {
-            let productData = await scrapeProductData(url);
-            productData.shouldSplit = shouldSplit;
-            productDataList.push(productData);
-            processedUrls++;
-            const progressPercentage = (processedUrls / totalUrls) * 100;
-            progressBar.style.width = `${progressPercentage}%`;
-            await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
+        for (const section of page.sections) {
+            const effectiveUrls = section.groups.length > 0 ? section.groups.flatMap(g => g.urls) : section.urls;
+            
+            for (const { url, shouldSplit, splitIndex } of effectiveUrls) {
+                if (!productDataMap.has(url)) {
+                    let productData = await scrapeProductData(url);
+                    productDataMap.set(url, productData);
+                    processedUrls++;
+                    const progressPercentage = (processedUrls / totalUrls) * 100;
+                    progressBar.style.width = `${progressPercentage}%`;
+                    await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
+                }
+            }
         }
         
         const pageWrapper = document.createElement('div');
@@ -824,10 +1098,6 @@ async function updateTables() {
                 info@futureautomation.net
             </div>
             <div class="table-wrapper" id="tableWrapper${pageIndex}">
-                <table id="infoTable${pageIndex}">
-                    <thead><tr><th>SPECIFICATION</th></tr></thead>
-                    <tbody></tbody>
-                </table>
             </div>
             <div class="footer">
                 www.<b>FUTUREAUTOMATION</b>.net<br>
@@ -842,196 +1112,130 @@ async function updateTables() {
         if (page.title) adjustTitleFontSize(titleElement, page.title);
         else titleElement.style.fontSize = '12pt';
         
-        const tbody = document.getElementById(`infoTable${pageIndex}`).querySelector('tbody');
-        const thead = document.getElementById(`infoTable${pageIndex}`).querySelector('thead');
-        
-        let expandedProductDataList = [];
-        let productCodeToUrl = {};
-        productDataList.forEach(product => {
-            const useSplit = product.shouldSplit;
-            if (useSplit && product.subcodes.length > 1) {
-                product.subcodes.forEach(subcode => {
-                    const newProduct = { ...product, subcodes: [subcode], productName: subcode };
-                    const newSpecifications = {};
-                    Object.keys(product.specifications).forEach(spec => {
-                        const values = product.specifications[spec] || [];
-                        const matchingValue = values.find(v => v.subcode === subcode);
-                        newSpecifications[spec] = matchingValue ? [matchingValue] : [];
-                    });
-                    newProduct.specifications = newSpecifications;
-                    newProduct.url = product.url;
-                    expandedProductDataList.push(newProduct);
-                    productCodeToUrl[subcode] = product.url;
-                });
-            } else {
-                expandedProductDataList.push(product);
-                productCodeToUrl[product.subcodes[0] || product.productName] = product.url;
-            }
-        });
-
-        expandedProductDataList.forEach(product => {
-            const th = document.createElement('th');
-            const a = document.createElement('a');
-            const productCode = product.shouldSplit ? (product.subcodes[0] || product.productName) : product.productName;
-            a.href = productCodeToUrl[productCode] || product.url;
-            a.textContent = productCode;
-            th.appendChild(a);
-            thead.children[0].appendChild(th);
-        });
-        
-        if (page.groups.length > 0) {
-            const groupRow = document.createElement('tr');
-            groupRow.classList.add('group-row');
-            const emptyTh = document.createElement('th');
-            groupRow.appendChild(emptyTh);
-            page.groups.forEach(group => {
-                let groupProductCount = 0;
-                group.urls.forEach(({ url }) => {
-                    const product = productDataList.find(p => p.url === url);
-                    if (product && product.shouldSplit) {
-                        groupProductCount += product.subcodes.length;
-                    } else {
-                        groupProductCount += 1;
-                    }
-                });
-                const th = document.createElement('th');
-                th.textContent = group.name;
-                th.colSpan = groupProductCount;
-                groupRow.appendChild(th);
-            });
-            thead.insertBefore(groupRow, thead.children[0]);
-        }
-        
-        const imageRow = document.createElement('tr');
-        const imageCell = document.createElement('td');
-        imageCell.textContent = 'PRODUCT IMAGE';
-        imageRow.appendChild(imageCell);
-        expandedProductDataList.forEach(product => {
-            const imgCell = document.createElement('td');
-            const img = document.createElement('img');
-            img.src = product.productImage;
-            img.style.maxWidth = '100%';
-            img.style.height = 'auto';
-            imgCell.appendChild(img);
-            imageRow.appendChild(imgCell);
-        });
-        tbody.appendChild(imageRow);
-        
-        const firstImageCell = imageRow.querySelector('td:nth-child(2)');
-        if (firstImageCell) {
-            const cellWidth = firstImageCell.offsetWidth;
-            imageRow.style.height = `${cellWidth}px`;
-            imageRow.querySelectorAll('td').forEach(cell => cell.style.height = `${cellWidth}px`);
-        }
-        
-        const allSpecs = new Set();
-        expandedProductDataList.forEach(product => {
-            Object.keys(product.specifications).forEach(spec => allSpecs.add(spec));
-        });
-        
-        const rows = [];
-        let techSheetRow = null;
-        const buttons = [];
-        let techSheetButton = null;
-        
+        const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
+        const sections = [];
         const defaultHiddenSpecs = ['DOWNLOADS', 'EXAMPLE TECHNICAL SHEETS', 'SHIPPING DIMENSIONS', 'VIDEO INSTRUCTIONS', 'SHIPPING WEIGHT', 'WHAT\'S INCLUDED'];
-
-        allSpecs.forEach(spec => {
-            const specUpper = spec.toUpperCase();
-            if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) return;
-
-            const tr = document.createElement('tr');
-            const tdSpec = document.createElement('td');
-            tdSpec.textContent = spec;
-            tr.appendChild(tdSpec);
-
-            if (defaultHiddenSpecs.includes(specUpper)) {
-                tr.style.display = 'none';
-            }
-
-            expandedProductDataList.forEach((product, index) => {
-                const tdValue = document.createElement('td');
-                let values = product.specifications[spec] || [];
-                if (!product.shouldSplit) {
-                    values = selectCompactValue(values, spec, product.productName);
-                }
-                values = simplifySizes(values, spec, product.shouldSplit);
+        
+        page.sections.forEach((section, sectionIndex) => {
+            const sectionProducts = [];
+            const effectiveUrls = section.groups.length > 0 ? section.groups.flatMap(g => g.urls) : section.urls;
+            
+            effectiveUrls.forEach(({ url, shouldSplit, splitIndex }) => {
+                const product = productDataMap.get(url);
+                if (!product) return;
                 
-                if (values.length === 0) {
-                    tdValue.innerHTML = 'N/A';
-                } else {
-                    if (product.shouldSplit) {
-                        tdValue.innerHTML = `<div class="cell-value">${values[0]?.value || 'N/A'}</div>`;
-                    } else {
-                        const valueGroups = {};
-                        values.forEach(item => {
-                            const valueKey = item.value;
-                            if (!valueGroups[valueKey]) {
-                                valueGroups[valueKey] = [];
-                            }
-                            valueGroups[valueKey].push(item.subcode);
+                if (splitIndex !== null) {
+                    if (product.subcodes.length > splitIndex) {
+                        const subcode = product.subcodes[splitIndex];
+                        const newProduct = { ...product, subcodes: [subcode], productName: subcode };
+                        const newSpecifications = {};
+                        Object.keys(product.specifications).forEach(spec => {
+                            const values = product.specifications[spec] || [];
+                            const matchingValue = values[splitIndex];
+                            newSpecifications[spec] = matchingValue ? [matchingValue] : [];
                         });
-
-                        const uniqueValues = Object.keys(valueGroups);
-                        const isSingleValue = uniqueValues.length === 1;
-
-                        if (specUpper === 'TECHNICAL SHEET' || specUpper === 'TECH SHEET') {
-                            tdValue.innerHTML = values.map(item => item.value).join(' ');
-                        } else if (specUpper === 'PRODUCT CODE') {
-                            tdValue.innerHTML = `<div class="cell-value">${values.map(item => item.subcode).join(', ')}</div>`;
-                        } else if (isSingleValue) {
-                            tdValue.innerHTML = `<div class="cell-value">${uniqueValues[0]}</div>`;
-                        } else {
-                            const formattedValues = Object.entries(valueGroups).map(([value, subcodes]) => {
-                                return `<div class="cell-value"><strong>${subcodes.join(', ')}</strong></div><div class="cell-value">${value}</div>`;
-                            });
-                            tdValue.innerHTML = formattedValues.join('');
-                        }
+                        newProduct.specifications = newSpecifications;
+                        newProduct.shouldSplit = true;
+                        sectionProducts.push(newProduct);
                     }
+                } else if (shouldSplit && product.subcodes.length > 1) {
+                    product.subcodes.forEach((subcode, index) => {
+                        const newProduct = { ...product, subcodes: [subcode], productName: subcode };
+                        const newSpecifications = {};
+                        Object.keys(product.specifications).forEach(spec => {
+                            const values = product.specifications[spec] || [];
+                            const matchingValue = values[index];
+                            newSpecifications[spec] = matchingValue ? [matchingValue] : [];
+                        });
+                        newProduct.specifications = newSpecifications;
+                        newProduct.shouldSplit = true;
+                        sectionProducts.push(newProduct);
+                    });
+                } else {
+                    const productCopy = { ...product, shouldSplit };
+                    sectionProducts.push(productCopy);
+                }
+            });
+            
+            const sectionSpecs = [...new Set(sectionProducts.flatMap(product => Object.keys(product.specifications)))];
+            const specVisibility = {};
+            sectionSpecs.forEach(spec => {
+                const specUpper = spec.toUpperCase();
+                if (!["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) {
+                    specVisibility[spec] = !defaultHiddenSpecs.includes(specUpper);
+                }
+            });
+            
+            const sectionGroups = [];
+            if (section.groups.length > 0) {
+                section.groups.forEach(group => {
+                    let productCount = 0;
+                    group.urls.forEach(({ url, shouldSplit, splitIndex }) => {
+                        const product = productDataMap.get(url);
+                        if (product) {
+                            if (splitIndex !== null) {
+                                productCount += 1;
+                            } else if (shouldSplit) {
+                                productCount += product.subcodes.length;
+                            } else {
+                                productCount += 1;
+                            }
+                        }
+                    });
+                    sectionGroups.push({ name: group.name, productCount });
+                });
+            }
+            
+            const sectionData = {
+                products: sectionProducts,
+                specs: sectionSpecs,
+                specVisibility: specVisibility,
+                groups: sectionGroups
+            };
+            
+            sections.push(sectionData);
+            
+            const sectionTable = createSectionTable(sectionData, sectionIndex, pageIndex);
+            tableWrapper.appendChild(sectionTable);
+            
+            const sectionControlsDiv = document.createElement('div');
+            sectionControlsDiv.classList.add('section-controls');
+            const sectionTitle = document.createElement('div');
+            sectionTitle.classList.add('section-title');
+            sectionTitle.textContent = `Section ${sectionIndex + 1}`;
+            sectionControlsDiv.appendChild(sectionTitle);
+            
+            sectionSpecs.forEach(spec => {
+                const specUpper = spec.toUpperCase();
+                if (["CAD", "INSTRUCTIONS", "SELL SHEET"].includes(specUpper)) return;
+                
+                const button = document.createElement('button');
+                button.textContent = spec;
+                button.classList.add('toggle-button');
+                button.dataset.pageIndex = pageIndex;
+                button.dataset.spec = spec;
+                button.dataset.sectionIndex = sectionIndex;
+                
+                if (defaultHiddenSpecs.includes(specUpper)) {
+                    button.classList.add('active');
                 }
                 
-                tr.appendChild(tdValue);
+                button.onclick = () => {
+                    sections[sectionIndex].specVisibility[spec] = !sections[sectionIndex].specVisibility[spec];
+                    button.classList.toggle('active');
+                    rebuildSectionTable(sectionIndex, pageIndex);
+                };
+                
+                sectionControlsDiv.appendChild(button);
             });
-
-            if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
-                techSheetRow = tr;
-            } else {
-                rows.push(tr);
-            }
-
-            const button = document.createElement('button');
-            button.textContent = `${spec}`;
-            button.classList.add('toggle-button');
-            button.dataset.pageIndex = pageIndex;
-
-            if (defaultHiddenSpecs.includes(specUpper)) {
-                button.classList.add('active');
-            }
-
-            button.onclick = () => {
-                tr.style.display = tr.style.display === 'none' ? '' : 'none';
-                button.classList.toggle('active');
-                adjustFontSizeBasedOnTableContent(pageIndex);
-                updateRowColors(document.getElementById(`infoTable${pageIndex}`));
-            };
-
-            if (specUpper === 'TECH SHEET' || specUpper === 'TECHNICAL SHEET') {
-                techSheetButton = button;
-            } else {
-                buttons.push(button);
-            }
+            
+            const buttonContainer = document.getElementById(`buttonContainer${pageIndex}`);
+            buttonContainer.appendChild(sectionControlsDiv);
         });
         
-        rows.forEach(row => tbody.appendChild(row));
+        window.pageSections[pageIndex] = sections;
         
-        if (techSheetRow) tbody.appendChild(techSheetRow);
-        
-        const buttonContainer = document.getElementById(`buttonContainer${pageIndex}`);
-        buttons.forEach(button => buttonContainer.appendChild(button));
-        
-        if (techSheetButton) buttonContainer.appendChild(techSheetButton);
-        
-        updateRowColors(document.getElementById(`infoTable${pageIndex}`));
+        setConsistentImageHeights(pageIndex);
         adjustFontSizeBasedOnTableContent(pageIndex);
     }
     
@@ -1040,64 +1244,105 @@ async function updateTables() {
 }
 
 function adjustFontSizeBasedOnTableContent(pageIndex) {
-    const table = document.getElementById(`infoTable${pageIndex}`);
     const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
-    if (!table || !tableWrapper) return;
-    const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
-    if (visibleRows.length === 0) return;
-    const cells = table.querySelectorAll('th, td');
+    if (!tableWrapper) return;
+    
+    const tables = tableWrapper.querySelectorAll('.section-table');
+    if (tables.length === 0) return;
+    
     const maxFontSize = 12;
     const minFontSize = 3;
     let optimalFontSize = maxFontSize;
-    cells.forEach(cell => cell.style.fontSize = '');
-    visibleRows.forEach(row => {
-        const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
-            const style = window.getComputedStyle(cell);
-            return cell.style.display !== 'none' && style.visibility !== 'hidden';
-        });
-        visibleCells.forEach(cell => {
-            const computedStyle = window.getComputedStyle(cell);
-            const paddingTop = parseFloat(computedStyle.paddingTop);
-            const paddingBottom = parseFloat(computedStyle.paddingBottom);
-            const paddingLeft = parseFloat(computedStyle.paddingLeft);
-            const paddingRight = parseFloat(computedStyle.paddingRight);
-            const cellHeight = cell.clientHeight - paddingTop - paddingBottom;
-            const cellWidth = cell.clientWidth - paddingLeft - paddingRight;
-            if (cellHeight <= 0 || cellWidth <= 0 || !cell.textContent.trim()) return;
-            cell.style.fontSize = `${maxFontSize}px`;
-            const textHeight = cell.scrollHeight;
-            const textWidth = cell.scrollWidth;
-            const heightRatio = cellHeight / textHeight;
-            const widthRatio = cellWidth / textWidth;
-            const scaleFactor = Math.min(heightRatio, widthRatio);
-            let tdFontHeight = Math.floor(maxFontSize * scaleFactor);
-            tdFontHeight = Math.max(minFontSize, Math.min(tdFontHeight, maxFontSize));
-            optimalFontSize = Math.min(optimalFontSize, tdFontHeight);
+    
+    const wrapperHeight = tableWrapper.clientHeight;
+    const wrapperWidth = tableWrapper.clientWidth;
+    
+    tables.forEach(table => {
+        const cells = table.querySelectorAll('th, td');
+        cells.forEach(cell => cell.style.fontSize = '');
+    });
+    
+    let totalTableWidth = 0;
+    tables.forEach(table => {
+        totalTableWidth += table.offsetWidth;
+    });
+    
+    if (totalTableWidth > wrapperWidth) {
+        const widthRatio = wrapperWidth / totalTableWidth;
+        optimalFontSize = Math.floor(optimalFontSize * widthRatio * 0.9);
+    }
+    
+    tables.forEach(table => {
+        const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+        if (visibleRows.length === 0) return;
+        
+        visibleRows.forEach(row => {
+            const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
+                const style = window.getComputedStyle(cell);
+                return cell.style.display !== 'none' && style.visibility !== 'hidden';
+            });
+            
+            visibleCells.forEach(cell => {
+                if (cell.querySelector('img')) return;
+                
+                const computedStyle = window.getComputedStyle(cell);
+                const paddingTop = parseFloat(computedStyle.paddingTop);
+                const paddingBottom = parseFloat(computedStyle.paddingBottom);
+                const paddingLeft = parseFloat(computedStyle.paddingLeft);
+                const paddingRight = parseFloat(computedStyle.paddingRight);
+                const cellHeight = cell.clientHeight - paddingTop - paddingBottom;
+                const cellWidth = cell.clientWidth - paddingLeft - paddingRight;
+                
+                if (cellHeight <= 0 || cellWidth <= 0 || !cell.textContent.trim()) return;
+                
+                cell.style.fontSize = `${maxFontSize}px`;
+                const textHeight = cell.scrollHeight;
+                const textWidth = cell.scrollWidth;
+                const heightRatio = cellHeight / textHeight;
+                const widthRatio = cellWidth / textWidth;
+                const scaleFactor = Math.min(heightRatio, widthRatio);
+                let tdFontHeight = Math.floor(maxFontSize * scaleFactor);
+                tdFontHeight = Math.max(minFontSize, Math.min(tdFontHeight, maxFontSize));
+                optimalFontSize = Math.min(optimalFontSize, tdFontHeight);
+            });
         });
     });
-    cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
-    const visibleTableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
-    const wrapperHeight = tableWrapper.clientHeight;
-    if (visibleTableHeight > wrapperHeight) {
-        const heightRatio = wrapperHeight / visibleTableHeight;
-        const dampedRatio = Math.max(0.71, heightRatio); 
+    
+    let maxTableHeight = 0;
+    tables.forEach(table => {
+        const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+        const tableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
+        maxTableHeight = Math.max(maxTableHeight, tableHeight);
+    });
+    
+    if (maxTableHeight > wrapperHeight) {
+        const heightRatio = wrapperHeight / maxTableHeight;
+        const dampedRatio = Math.max(0.7, heightRatio);
         optimalFontSize = Math.floor(optimalFontSize * dampedRatio);
-        optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
-        cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
     }
-    const groupRow = table.querySelector('.group-row');
-    const specRow = table.querySelector('thead tr:not(.group-row)');
-    if (groupRow && specRow) {
-        groupRow.style.height = `${specRow.offsetHeight}px`;
-    }
-    updateRowColors(table);
+    
+    optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
+    
+    tables.forEach(table => {
+        const cells = table.querySelectorAll('th, td');
+        cells.forEach(cell => {
+            cell.style.fontSize = `${optimalFontSize}px`;
+        });
+        updateRowColors(table);
+    });
 }
 
 function setupTableObservers() {
-    const tables = document.querySelectorAll('table[id^="infoTable"]');
-    tables.forEach((table, index) => {
-        const observer = new MutationObserver(() => adjustFontSizeBasedOnTableContent(index));
-        observer.observe(table, { childList: true, subtree: true });
+    const observer = new MutationObserver(() => {
+        const tables = document.querySelectorAll('table[id^="section"]');
+        tables.forEach(table => {
+            const pageIndex = parseInt(table.id.match(/table(\d+)$/)[1]);
+            adjustFontSizeBasedOnTableContent(pageIndex);
+        });
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        observer.observe(document.body, { childList: true, subtree: true });
     });
 }
 
