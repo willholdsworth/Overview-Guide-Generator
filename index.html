@@ -922,22 +922,60 @@ function setConsistentImageHeights(pageIndex) {
     const tables = tableWrapper.querySelectorAll('.section-table');
     if (tables.length === 0) return;
     
-    const firstImageCell = tableWrapper.querySelector('tbody tr:first-child td:nth-child(2)');
-    if (firstImageCell) {
-        const cellWidth = firstImageCell.offsetWidth;
-        const imageRow = tableWrapper.querySelector('tbody tr:first-child');
-        if (imageRow) {
-            imageRow.style.height = `${cellWidth}px`;
-            imageRow.querySelectorAll('td').forEach(cell => {
-                cell.style.height = `${cellWidth}px`;
-                cell.style.verticalAlign = 'middle';
-                const img = cell.querySelector('img');
-                if (img) {
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
-                }
-            });
+    // If there's only one table, use the original logic
+    if (tables.length === 1) {
+        const firstImageCell = tables[0].querySelector('tbody tr:first-child td:nth-child(2)');
+        if (firstImageCell) {
+            const cellWidth = firstImageCell.offsetWidth;
+            const imageRow = tables[0].querySelector('tbody tr:first-child');
+            if (imageRow) {
+                imageRow.style.height = `${cellWidth}px`;
+                imageRow.querySelectorAll('td').forEach(cell => {
+                    cell.style.height = `${cellWidth}px`;
+                    cell.style.verticalAlign = 'middle';
+                    const img = cell.querySelector('img');
+                    if (img) {
+                        img.style.maxWidth = '100%';
+                        img.style.height = 'auto';
+                    }
+                });
+            }
         }
+        return;
+    }
+    
+    // For multiple tables (DIVIDER sections), find the smallest cell width and apply consistently
+    let minCellWidth = Infinity;
+    
+    tables.forEach(table => {
+        const firstImageCell = table.querySelector('tbody tr:first-child td:nth-child(2)');
+        if (firstImageCell) {
+            const cellWidth = firstImageCell.offsetWidth;
+            minCellWidth = Math.min(minCellWidth, cellWidth);
+        }
+    });
+    
+    // Apply the minimum cell width as both width and height to all image cells for consistency
+    if (minCellWidth > 0 && minCellWidth !== Infinity) {
+        tables.forEach(table => {
+            const imageRow = table.querySelector('tbody tr:first-child');
+            if (imageRow) {
+                imageRow.style.height = `${minCellWidth}px`;
+                imageRow.querySelectorAll('td').forEach(cell => {
+                    cell.style.height = `${minCellWidth}px`;
+                    cell.style.width = `${minCellWidth}px`;
+                    cell.style.verticalAlign = 'middle';
+                    const img = cell.querySelector('img');
+                    if (img) {
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '100%';
+                        img.style.width = 'auto';
+                        img.style.height = 'auto';
+                        img.style.objectFit = 'contain';
+                    }
+                });
+            }
+        });
     }
 }
 
