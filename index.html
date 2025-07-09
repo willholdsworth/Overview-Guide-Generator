@@ -718,7 +718,13 @@ function simplifySizes(values, spec, splitProductCodes) {
         if ((specUpper.includes('MAX') || specUpper.includes('MAXIMUM')) && !splitProductCodes) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = item.value;
-            return { value: tempDiv.textContent.trim().split(', ').pop().trim(), subcode: item.subcode };
+            const textContent = tempDiv.textContent.trim();
+            
+            if (textContent.toUpperCase().includes('LEFT') && textContent.toUpperCase().includes('RIGHT')) {
+                return item;
+            }
+            
+            return { value: textContent.split(', ').pop().trim(), subcode: item.subcode };
         }
         return item;
     });
@@ -728,6 +734,17 @@ function selectCompactValue(values, spec, productName) {
     const specUpper = spec.toUpperCase();
     if (specUpper.includes('MAX') || specUpper.includes('MAX.') || specUpper.includes('MAXIMUM') || 
         specUpper.includes('SHIPPING') || specUpper.includes('SHIP') || specUpper.includes('WEIGHT')) {
+        
+        if (values.length > 0) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = values[values.length - 1].value;
+            const textContent = tempDiv.textContent.trim();
+            
+            if (textContent.toUpperCase().includes('LEFT') && textContent.toUpperCase().includes('RIGHT')) {
+                return values;
+            }
+        }
+        
         const lastValue = values[values.length - 1]?.value || 'N/A';
         return [{ value: lastValue, subcode: productName }];
     }
