@@ -480,11 +480,11 @@ td a {
         <h1>PRODUCT OVERVIEW GUIDE GENERATOR</h1>
         <textarea id="urlInput" placeholder="Paste URLs here, one per line">
 TITLE - ARTICULATING WALL MOUNT GUIDE
-https://www.futureautomation.co.uk/Product/Details/PS32
-https://www.futureautomation.co.uk/Product/Details/PS40
-https://www.futureautomation.co.uk/Product/Details/PS55
-https://www.futureautomation.co.uk/Product/Details/PS65
-https://www.futureautomation.co.uk/Product/Details/PS80
+MERGE A - https://www.futureautomation.co.uk/Product/Details/PS32
+MERGE A - https://www.futureautomation.co.uk/Product/Details/PS40
+MERGE A - https://www.futureautomation.co.uk/Product/Details/PS55
+MERGE A - https://www.futureautomation.co.uk/Product/Details/PS65
+MERGE A - https://www.futureautomation.co.uk/Product/Details/PS80
 SPLIT - https://www.futureautomation.co.uk/Product/Details/DA
 https://www.futureautomation.co.uk/Product/Details/FSA1
 https://www.futureautomation.co.uk/Product/Details/FSA2
@@ -628,6 +628,57 @@ const allSpecifications = {};
 let previousUrls = [];
 let toggleStates = {};
 let lastUrlInput = '';
+
+function extractCommonBaseName(productNames) {
+    if (productNames.length === 1) {
+        return removeTrailingNumbers(productNames[0]);
+    }
+    
+    const baseNames = productNames.map(name => removeTrailingNumbers(name));
+    const uniqueBaseNames = [...new Set(baseNames)];
+    
+    if (uniqueBaseNames.length === 1) {
+        return uniqueBaseNames[0];
+    }
+    
+    const commonPrefix = findLongestCommonPrefix(productNames);
+    const commonSuffix = findLongestCommonSuffix(baseNames);
+    
+    if (commonPrefix && commonSuffix && commonPrefix !== commonSuffix) {
+        return commonPrefix + commonSuffix;
+    } else if (commonPrefix) {
+        return commonPrefix.replace(/[-\d]*$/, '');
+    }
+    
+    return productNames[0];
+}
+
+function removeTrailingNumbers(name) {
+    return name.replace(/\d+/g, '');
+}
+
+function findLongestCommonPrefix(strings) {
+    if (strings.length === 0) return '';
+    if (strings.length === 1) return strings[0];
+    
+    let prefix = strings[0];
+    for (let i = 1; i < strings.length; i++) {
+        while (strings[i].indexOf(prefix) !== 0) {
+            prefix = prefix.substring(0, prefix.length - 1);
+            if (prefix === '') return '';
+        }
+    }
+    return prefix;
+}
+
+function findLongestCommonSuffix(strings) {
+    if (strings.length === 0) return '';
+    if (strings.length === 1) return '';
+    
+    const reversedStrings = strings.map(s => s.split('').reverse().join(''));
+    const reversedPrefix = findLongestCommonPrefix(reversedStrings);
+    return reversedPrefix.split('').reverse().join('');
+}
 
 function printPage() {
     window.print();
@@ -964,20 +1015,43 @@ function setConsistentImageHeights(pageIndex) {
     
     tableWrapper.offsetHeight;
     
+    const maxImageHeight = 180;
+    const minImageHeight = 150;
+    
+    const wrapperHeight = tableWrapper.clientHeight;
+    
+    let totalNonImageHeight = 0;
+    tables.forEach(table => {
+        const allRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+        const imageRow = table.querySelector('tbody tr:first-child');
+        allRows.forEach(row => {
+            if (row !== imageRow) {
+                totalNonImageHeight += row.offsetHeight || 25;
+            }
+        });
+    });
+    
+    const availableHeightForImages = wrapperHeight - totalNonImageHeight;
+    const imageRowCount = tables.length;
+    const maxAllowedImageHeight = Math.max(minImageHeight, Math.floor(availableHeightForImages / imageRowCount));
+    
     if (tables.length === 1) {
         const firstImageCell = tables[0].querySelector('tbody tr:first-child td:nth-child(2)');
         if (firstImageCell) {
             const cellWidth = firstImageCell.offsetWidth;
             const imageRow = tables[0].querySelector('tbody tr:first-child');
             if (imageRow) {
-                imageRow.style.height = `${cellWidth}px`;
+                const constrainedHeight = Math.min(cellWidth, maxImageHeight, maxAllowedImageHeight);
+                imageRow.style.height = `${constrainedHeight}px`;
                 imageRow.querySelectorAll('td').forEach(cell => {
-                    cell.style.height = `${cellWidth}px`;
+                    cell.style.height = `${constrainedHeight}px`;
                     cell.style.verticalAlign = 'middle';
                     const img = cell.querySelector('img');
                     if (img) {
                         img.style.maxWidth = '100%';
+                        img.style.maxHeight = `${constrainedHeight}px`;
                         img.style.height = 'auto';
+                        img.style.objectFit = 'contain';
                     }
                 });
             }
@@ -1004,18 +1078,19 @@ function setConsistentImageHeights(pageIndex) {
     });
     
     if (needsConstraint && minCellWidth > 0 && minCellWidth !== Infinity) {
+        const constrainedHeight = Math.min(minCellWidth, maxImageHeight, maxAllowedImageHeight);
         tables.forEach(table => {
             const imageRow = table.querySelector('tbody tr:first-child');
             if (imageRow) {
-                imageRow.style.height = `${minCellWidth}px`;
+                imageRow.style.height = `${constrainedHeight}px`;
                 imageRow.querySelectorAll('td').forEach(cell => {
-                    cell.style.height = `${minCellWidth}px`;
-                    cell.style.width = `${minCellWidth}px`;
+                    cell.style.height = `${constrainedHeight}px`;
+                    cell.style.width = `${constrainedHeight}px`;
                     cell.style.verticalAlign = 'middle';
                     const img = cell.querySelector('img');
                     if (img) {
                         img.style.maxWidth = '100%';
-                        img.style.maxHeight = '100%';
+                        img.style.maxHeight = `${constrainedHeight}px`;
                         img.style.width = 'auto';
                         img.style.height = 'auto';
                         img.style.objectFit = 'contain';
@@ -1030,14 +1105,17 @@ function setConsistentImageHeights(pageIndex) {
                 const firstImageCell = imageRow.querySelector('td:nth-child(2)');
                 if (firstImageCell) {
                     const cellWidth = firstImageCell.offsetWidth;
-                    imageRow.style.height = `${cellWidth}px`;
+                    const constrainedHeight = Math.min(cellWidth, maxImageHeight, maxAllowedImageHeight);
+                    imageRow.style.height = `${constrainedHeight}px`;
                     imageRow.querySelectorAll('td').forEach(cell => {
-                        cell.style.height = `${cellWidth}px`;
+                        cell.style.height = `${constrainedHeight}px`;
                         cell.style.verticalAlign = 'middle';
                         const img = cell.querySelector('img');
                         if (img) {
                             img.style.maxWidth = '100%';
+                            img.style.maxHeight = `${constrainedHeight}px`;
                             img.style.height = 'auto';
+                            img.style.objectFit = 'contain';
                         }
                     });
                 }
@@ -1077,14 +1155,25 @@ async function updateTables() {
                 name: line.replace('GROUP - ', '').trim(),
                 urls: []
             });
-        } else if (line.startsWith('http') || line.startsWith('SPLIT')) {
+        } else if (line.startsWith('http') || line.startsWith('SPLIT') || line.startsWith('MERGE')) {
             if (!currentPage) {
                 currentPage = { title: '', sections: [{ groups: [], urls: [] }] };
             }
             
-            let url, shouldSplit, splitIndex = null;
+            let url, shouldSplit, splitIndex = null, mergeId = null;
             
-            if (line.startsWith('SPLIT ')) {
+            if (line.startsWith('MERGE ')) {
+                const mergeMatch = line.match(/^MERGE (\w+) - (.+)$/);
+                if (mergeMatch) {
+                    mergeId = mergeMatch[1];
+                    url = mergeMatch[2].trim();
+                    shouldSplit = false;
+                } else {
+                    url = line.replace('MERGE', '').replace(/^[\s-]+/, '').trim();
+                    shouldSplit = false;
+                    mergeId = 'default';
+                }
+            } else if (line.startsWith('SPLIT ')) {
                 const match = line.match(/^SPLIT (\d+) - (.+)$/);
                 if (match) {
                     splitIndex = parseInt(match[1]) - 1;
@@ -1104,7 +1193,7 @@ async function updateTables() {
             
             const currentSection = currentPage.sections[currentPage.sections.length - 1];
             const currentGroup = currentSection.groups.length > 0 ? currentSection.groups[currentSection.groups.length - 1] : null;
-            const urlObject = { url, shouldSplit, splitIndex };
+            const urlObject = { url, shouldSplit, splitIndex, mergeId };
             
             if (currentGroup) {
                 currentGroup.urls.push(urlObject);
@@ -1144,7 +1233,7 @@ async function updateTables() {
         for (const section of page.sections) {
             const effectiveUrls = section.groups.length > 0 ? section.groups.flatMap(g => g.urls) : section.urls;
             
-            for (const { url, shouldSplit, splitIndex } of effectiveUrls) {
+            for (const { url, shouldSplit, splitIndex, mergeId } of effectiveUrls) {
                 if (!productDataMap.has(url)) {
                     let productData = await scrapeProductData(url);
                     productDataMap.set(url, productData);
@@ -1209,7 +1298,74 @@ async function updateTables() {
             const sectionProducts = [];
             const effectiveUrls = section.groups.length > 0 ? section.groups.flatMap(g => g.urls) : section.urls;
             
-            effectiveUrls.forEach(({ url, shouldSplit, splitIndex }) => {
+            const mergeGroups = {};
+            const nonMergeUrls = [];
+            
+            effectiveUrls.forEach((urlObj) => {
+                if (urlObj.mergeId) {
+                    if (!mergeGroups[urlObj.mergeId]) {
+                        mergeGroups[urlObj.mergeId] = [];
+                    }
+                    mergeGroups[urlObj.mergeId].push(urlObj);
+                } else {
+                    nonMergeUrls.push(urlObj);
+                }
+            });
+            
+            Object.values(mergeGroups).forEach(mergeGroup => {
+                if (mergeGroup.length === 1) {
+                    nonMergeUrls.push(mergeGroup[0]);
+                    return;
+                }
+                
+                const products = mergeGroup.map(({ url }) => productDataMap.get(url)).filter(Boolean);
+                if (products.length === 0) return;
+                
+                const baseProduct = products[0];
+                const allProductNames = products.map(p => p.productName);
+                const baseName = extractCommonBaseName(allProductNames);
+                
+                const mergedProduct = {
+                    ...baseProduct,
+                    productName: baseName,
+                    shouldSplit: false,
+                    specifications: {},
+                    subcodes: [baseName]
+                };
+                
+                const allSpecs = new Set();
+                products.forEach(product => {
+                    Object.keys(product.specifications).forEach(spec => allSpecs.add(spec));
+                });
+                
+                allSpecs.forEach(spec => {
+                    const allValues = [];
+                    const seenValues = new Set();
+                    
+                    products.forEach(product => {
+                        if (product.specifications[spec] && product.specifications[spec].length > 0) {
+                            product.specifications[spec].forEach(specValue => {
+                                const valueKey = `${specValue.value}|${specValue.subcode}`;
+                                if (!seenValues.has(valueKey)) {
+                                    seenValues.add(valueKey);
+                                    allValues.push({
+                                        value: specValue.value,
+                                        subcode: specValue.subcode
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    
+                    if (allValues.length > 0) {
+                        mergedProduct.specifications[spec] = allValues;
+                    }
+                });
+                
+                sectionProducts.push(mergedProduct);
+            });
+            
+            nonMergeUrls.forEach(({ url, shouldSplit, splitIndex }) => {
                 const product = productDataMap.get(url);
                 if (!product) return;
                 
@@ -1259,7 +1415,29 @@ async function updateTables() {
             if (section.groups.length > 0) {
                 section.groups.forEach(group => {
                     let productCount = 0;
-                    group.urls.forEach(({ url, shouldSplit, splitIndex }) => {
+                    const mergeGroups = {};
+                    const nonMergeUrls = [];
+                    
+                    group.urls.forEach((urlObj) => {
+                        if (urlObj.mergeId) {
+                            if (!mergeGroups[urlObj.mergeId]) {
+                                mergeGroups[urlObj.mergeId] = [];
+                            }
+                            mergeGroups[urlObj.mergeId].push(urlObj);
+                        } else {
+                            nonMergeUrls.push(urlObj);
+                        }
+                    });
+                    
+                    Object.values(mergeGroups).forEach(mergeGroup => {
+                        if (mergeGroup.length === 1) {
+                            nonMergeUrls.push(mergeGroup[0]);
+                            return;
+                        }
+                        productCount += 1;
+                    });
+                    
+                    nonMergeUrls.forEach(({ url, shouldSplit, splitIndex }) => {
                         const product = productDataMap.get(url);
                         if (product) {
                             if (splitIndex !== null) {
@@ -1271,6 +1449,7 @@ async function updateTables() {
                             }
                         }
                     });
+                    
                     sectionGroups.push({ name: group.name, productCount });
                 });
             }
