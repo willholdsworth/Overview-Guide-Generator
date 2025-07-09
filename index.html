@@ -911,7 +911,6 @@ function rebuildSectionTable(sectionIndex, pageIndex) {
         tableWrapper.replaceChild(newTable, oldTable);
     }
     
-    // Use setTimeout to ensure DOM is fully updated before recalculating sizes
     setTimeout(() => {
         setConsistentImageHeights(pageIndex);
         adjustFontSizeBasedOnTableContent(pageIndex);
@@ -925,7 +924,6 @@ function setConsistentImageHeights(pageIndex) {
     const tables = tableWrapper.querySelectorAll('.section-table');
     if (tables.length === 0) return;
     
-    // Reset all image cell styles first to allow natural table layout
     tables.forEach(table => {
         const imageRow = table.querySelector('tbody tr:first-child');
         if (imageRow) {
@@ -947,10 +945,8 @@ function setConsistentImageHeights(pageIndex) {
         }
     });
     
-    // Force reflow to get accurate natural measurements
     tableWrapper.offsetHeight;
     
-    // If there's only one table, use the original logic
     if (tables.length === 1) {
         const firstImageCell = tables[0].querySelector('tbody tr:first-child td:nth-child(2)');
         if (firstImageCell) {
@@ -972,7 +968,6 @@ function setConsistentImageHeights(pageIndex) {
         return;
     }
     
-    // For multiple tables (DIVIDER sections), find the smallest natural cell width
     let minCellWidth = Infinity;
     
     tables.forEach(table => {
@@ -983,7 +978,6 @@ function setConsistentImageHeights(pageIndex) {
         }
     });
     
-    // Only apply constraints if we actually have different sized tables
     let needsConstraint = false;
     tables.forEach(table => {
         const firstImageCell = table.querySelector('tbody tr:first-child td:nth-child(2)');
@@ -993,7 +987,6 @@ function setConsistentImageHeights(pageIndex) {
     });
     
     if (needsConstraint && minCellWidth > 0 && minCellWidth !== Infinity) {
-        // Apply constraints only when tables have different sizes
         tables.forEach(table => {
             const imageRow = table.querySelector('tbody tr:first-child');
             if (imageRow) {
@@ -1014,7 +1007,6 @@ function setConsistentImageHeights(pageIndex) {
             }
         });
     } else {
-        // If all tables are the same size, use natural sizing
         tables.forEach(table => {
             const imageRow = table.querySelector('tbody tr:first-child');
             if (imageRow) {
@@ -1324,22 +1316,28 @@ async function updateTables() {
 }
 
 function adjustFontSizeBasedOnTableContent(pageIndex) {
-    const tables = document.querySelectorAll(`#tableWrapper${pageIndex} .section-table`);
+    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
+    if (!tableWrapper) return;
+    
+    const tables = tableWrapper.querySelectorAll('.section-table');
     if (tables.length === 0) return;
     
+    const maxFontSize = 12;
+    const minFontSize = 3;
+    let globalOptimalFontSize = maxFontSize;
+    
     tables.forEach(table => {
-        const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
-        if (!tableWrapper) return;
-        
+        const cells = table.querySelectorAll('th, td');
+        cells.forEach(cell => cell.style.fontSize = '');
+    });
+    
+    tableWrapper.offsetHeight;
+    
+    tables.forEach(table => {
         const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
         if (visibleRows.length === 0) return;
         
-        const cells = table.querySelectorAll('th, td');
-        const maxFontSize = 12;
-        const minFontSize = 3;
-        let optimalFontSize = maxFontSize;
-        
-        cells.forEach(cell => cell.style.fontSize = '');
+        let tableOptimalFontSize = maxFontSize;
         
         visibleRows.forEach(row => {
             const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
@@ -1366,22 +1364,29 @@ function adjustFontSizeBasedOnTableContent(pageIndex) {
                 const heightRatio = cellHeight / textHeight;
                 const widthRatio = cellWidth / textWidth;
                 const scaleFactor = Math.min(heightRatio, widthRatio);
-                let tdFontHeight = Math.floor(maxFontSize * scaleFactor);
-                tdFontHeight = Math.max(minFontSize, Math.min(tdFontHeight, maxFontSize));
-                optimalFontSize = Math.min(optimalFontSize, tdFontHeight);
+                let cellFontSize = Math.floor(maxFontSize * scaleFactor);
+                cellFontSize = Math.max(minFontSize, Math.min(cellFontSize, maxFontSize));
+                tableOptimalFontSize = Math.min(tableOptimalFontSize, cellFontSize);
             });
         });
         
-        const visibleTableHeight = visibleRows.reduce((sum, row) => sum + row.offsetHeight, 0);
-        const wrapperHeight = tableWrapper.clientHeight;
-        if (visibleTableHeight > wrapperHeight) {
-            const heightRatio = wrapperHeight / visibleTableHeight;
-            const dampedRatio = Math.max(0.71, heightRatio);
-            optimalFontSize = Math.floor(optimalFontSize * dampedRatio);
-            optimalFontSize = Math.max(minFontSize, Math.min(optimalFontSize, maxFontSize));
-        }
-        
-        cells.forEach(cell => cell.style.fontSize = `${optimalFontSize}px`);
+        globalOptimalFontSize = Math.min(globalOptimalFontSize, tableOptimalFontSize);
+    });
+    
+    const totalVisibleRows = Array.from(tables).reduce((count, table) => {
+        return count + Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none').length;
+    }, 0);
+    
+    if (totalVisibleRows > 30) {
+        const rowPenalty = Math.max(0.5, 1 - (totalVisibleRows - 30) * 0.02);
+        globalOptimalFontSize = Math.floor(globalOptimalFontSize * rowPenalty);
+    }
+    
+    globalOptimalFontSize = Math.max(minFontSize, globalOptimalFontSize);
+    
+    tables.forEach(table => {
+        const cells = table.querySelectorAll('th, td');
+        cells.forEach(cell => cell.style.fontSize = `${globalOptimalFontSize}px`);
         
         const groupRow = table.querySelector('.group-row');
         const specRow = table.querySelector('thead tr:not(.group-row)');
@@ -1391,6 +1396,26 @@ function adjustFontSizeBasedOnTableContent(pageIndex) {
         
         updateRowColors(table);
     });
+    
+    setTimeout(() => {
+        const wrapperHeight = tableWrapper.clientHeight;
+        const totalTableHeight = Array.from(tables).reduce((sum, table) => {
+            const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+            return sum + visibleRows.reduce((rowSum, row) => rowSum + row.offsetHeight, 0);
+        }, 0);
+        
+        if (totalTableHeight > wrapperHeight * 0.98) {
+            const heightRatio = (wrapperHeight * 0.95) / totalTableHeight;
+            const newFontSize = Math.max(minFontSize, Math.floor(globalOptimalFontSize * heightRatio));
+            
+            if (newFontSize < globalOptimalFontSize) {
+                tables.forEach(table => {
+                    const cells = table.querySelectorAll('th, td');
+                    cells.forEach(cell => cell.style.fontSize = `${newFontSize}px`);
+                });
+            }
+        }
+    }, 50);
 }
 
 function setupTableObservers() {
