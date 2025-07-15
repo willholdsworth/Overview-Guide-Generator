@@ -3,34 +3,342 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRODUCT OVERVIEW GUIDE GENERATOR</title>
+    <title>Product Overview Guide Generator</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Open Sans, sans-serif;
-    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
+    background: #ffffff;
+    color: #000000;
+    line-height: 1.5;
 }
 
 .container {
-    width: calc(297mm - 40px);
-    margin: 0 auto;
+    background: #ffffff;
+    border: 0px solid #000000;
+    border-radius: 0;
+    padding: 30px;
+    width: 100%;
+}
+
+h1 {
+    color: #000000;
+    text-align: center;
+    margin: 0 0 30px 0;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: bold;
+    padding-bottom: 15px;
+}
+
+.input-section {
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #000000;
+    font-size: 1rem;
 }
 
 textarea {
     width: 100%;
-    height: 100px;
-    margin-bottom: 20px;
+    min-height: 150px;
+    padding: 15px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    font-size: 14px;
+    resize: vertical;
+    background: #ffffff;
+    color: #000000;
+    font-family: monospace;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #000000;
+    box-shadow: inset 0 0 0 2px #000000;
+}
+
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+button {
+    flex: 1;
+    min-width: 140px;
+    padding: 15px 20px;
+    border: 2px solid #000000;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #ffffff;
+    color: #000000;
+    transition: all 0.2s ease;
+}
+
+.primary-btn {
+    background: #000000;
+    color: #ffffff;
+	margin-bottom: 5px;
+}
+
+.primary-btn:hover:not(:disabled) {
+    background: #333333;
+}
+
+.secondary-btn {
+    background: #ffffff;
+    color: #000000;
+	margin-bottom: 5px;
+}
+
+.secondary-btn:hover:not(:disabled) {
+    background: #f5f5f5;
+}
+
+.secondary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px;
+    border: 0px solid #000000;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+.status {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #000000;
+    border-radius: 25px;
+    font-weight: 500;
+    width: 100%;
+    word-wrap: break-word;
+    text-align: center;
+}
+
+.status.loading {
+    background: #f0f0f0;
+    color: #000000;
+}
+
+.status.success {
+    background: #ffffff;
+    color: #000000;
+    border-color: #000000;
+}
+
+.status.error {
+    background: #000000;
+    color: #ffffff;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #f0f0f0;
+    border: 1px solid #000000;
+    border-radius: 25px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #000000;
+    transition: width 0.3s ease;
+    border-radius: 25px;
+}
+
+#pagesContainer {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.dropdown-toggle {
+    padding: 5px 10px;
+    background-color: lightgrey;
+    color: black;
+    border: 2px solid white;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    display: inline-block;
+    position: relative;
+    padding-right: 30px;
+    font-weight: 600;
+}
+
+.dropdown-toggle::after {
+    content: '▼';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+}
+
+.dropdown-toggle.active::after {
+    content: '▲';
+}
+
+.dropdown-content {
+    display: none;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.section-controls {
+    display: inline-block;
+    margin-right: 20px;
+    vertical-align: top;
+}
+
+.section-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.spec-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.spec-button {
+    padding: 5px 5px;
+    margin: 1px;
+    background-color: #303030;
+    color: white;
+    border: 2px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    min-width: auto;
+    flex: none;
+}
+
+.spec-button.active {
+    background-color: lightgrey;
+    color: black;
 }
 
 .a4-container {
-    width: 100%;
+    width: 297mm;
     height: 210mm;
-    border: 1px solid #000;
+    margin: 10px auto;
     padding: 20px;
     box-sizing: border-box;
+    border: 1px solid #000;
     position: relative;
     page-break-after: always;
-    margin-bottom: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transform-origin: top center;
+}
+@media screen and (max-width: 1400px) {
+    .a4-container {
+        transform: scale(0.9);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.9 / 2);
+        margin-right: calc(50vw - 297mm * 0.9 / 2);
+    }
+}
+@media screen and (max-width: 1200px) {
+    .a4-container {
+        transform: scale(0.7);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.7 / 2);
+        margin-right: calc(50vw - 297mm * 0.7 / 2);
+    }
+}
+@media screen and (max-width: 992px) {
+    .a4-container {
+        transform: scale(0.6);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.6 / 2);
+        margin-right: calc(50vw - 297mm * 0.6 / 2);
+    }
+}
+@media screen and (max-width: 768px) {
+    .a4-container {
+        transform: scale(0.5);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.5 / 2);
+        margin-right: calc(50vw - 297mm * 0.5 / 2);
+    }
+}
+@media screen and (max-width: 576px) {
+    .a4-container {
+        transform: scale(0.35);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.35 / 2);
+        margin-right: calc(50vw - 297mm * 0.35 / 2);
+    }
+}
+@media screen and (max-width: 470px) {
+    .a4-container {
+        transform: scale(0.35);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.35 / 2);
+        margin-right: calc(50vw - 297mm * 0.35 / 2);
+    }
+}
+@media screen and (max-width: 400px) {
+    .a4-container {
+        transform: scale(0.3);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.3 / 2);
+        margin-right: calc(50vw - 297mm * 0.3 / 2);
+    }
+}
+@media screen and (max-width: 350px) {
+    .a4-container {
+        transform: scale(0.25);
+        margin: 10px auto;
+        margin-left: calc(50vw - 297mm * 0.25 / 2);
+        margin-right: calc(50vw - 297mm * 0.25 / 2);
+    }
 }
 
 .logo {
@@ -49,6 +357,7 @@ textarea {
     white-space: nowrap;
     font-weight: bold;
     letter-spacing: 0.05rem;
+    font-size: 18pt;
 }
 
 .contact-info {
@@ -89,6 +398,8 @@ textarea {
     text-align: center;
     padding: 2px;
     overflow: hidden;
+    line-height: 1.1;
+    vertical-align: middle;
 }
 
 .section-table th:last-child, .section-table td:last-child {
@@ -103,6 +414,7 @@ textarea {
 .section-table td:first-child, .section-table th {
     background-color: black;
     color: white;
+    font-weight: bold;
 }
 
 .section-table th a {
@@ -120,6 +432,7 @@ textarea {
     margin: 0 auto;
     max-width: 100%;
     height: auto;
+    object-fit: contain;
 }
 
 .section-table tr.grey-row {
@@ -140,69 +453,27 @@ textarea {
     color: white;
 }
 
+.section-table tbody tr:first-child {
+    height: 45px;
+}
+
+.section-table tbody tr:first-child td {
+    vertical-align: middle;
+    height: 45px;
+}
+
 .footer {
     position: absolute;
     bottom: 20px;
-    width: 100%;
+    left: 20px;
+    right: 20px;
     text-align: center;
     font-size: 8px;
 }
 
-.styled-button {
-    padding: 5px 5px;
-    margin: 1px;
-    background-color: green;
-    color: white;
-    border: 2px solid white;
-    border-radius: 5px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.styled-button:active {
-    background-color: grey;
-}
-
-.toggle-button {
-    padding: 5px 5px;
-    margin: 1px;
-    background-color: #303030;
-    color: white;
-    border: 2px solid white;
-    border-radius: 5px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.toggle-button.active {
-    background-color: lightgrey;
-    color: black;
-}
-
-.button-container {
-    margin-bottom: 20px;
-}
-
-.section-controls {
-    display: inline-block;
-    margin-right: 20px;
-    vertical-align: top;
-}
-
-.section-title {
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #333;
-}
-
-td a {
-    color: inherit;
-    text-decoration: underline;
-}
-
 .cell-value {
-    margin-bottom: 2px;
-    line-height: 1.2;
+    margin-bottom: 1px;
+    line-height: 1.1;
 }
 
 .cell-value:last-child {
@@ -210,126 +481,130 @@ td a {
 }
 
 .cell-value strong {
-    font-size: 1em;
-    font-weight: lighter;
+    font-weight: bold;
     color: #000;
     display: inline;
 }
 
-.checkbox-container {
-    display: inline-block;
-    margin-left: 10px;
-    vertical-align: middle;
+td a {
+    color: inherit;
+    text-decoration: underline;
 }
 
-.progress-container {
-    width: 100%;
-    height: 20px;
-    background-color: #f2f2f2;
-    border-radius: 5px;
-    margin-top: 10px;
-    margin-bottom: 20px;
-    display: none;
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 20px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    button {
+        flex: none;
+        width: 100%;
+    }
+    
+    .pages-preview {
+        grid-template-columns: 1fr;
+    }
+    
+    textarea {
+        font-size: 16px;
+    }
 }
 
-.progress-bar {
-    height: 100%;
-    background-color: #4CAF50;
-    border-radius: 5px;
-    width: 0%;
-    transition: width 0.3s ease-in-out;
-}
-
-.dropdown-toggle {
-    padding: 5px 10px;
-    background-color: lightgrey;
-    color: black;
-    border: 2px solid white;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    display: inline-block;
-    position: relative;
-    padding-right: 30px;
-}
-
-.dropdown-toggle::after {
-    content: '▼';
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8em;
-}
-
-.dropdown-toggle.active::after {
-    content: '▲';
-}
-
-.dropdown-content {
-    display: none;
-    margin-bottom: 10px;
-}
-
-.dropdown-content.show {
-    display: block;
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    
+    button {
+        padding: 12px 15px;
+        font-size: 12px;
+    }
+    
+    .spec-buttons {
+        gap: 6px;
+    }
+    
+    .spec-button {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
 }
 
 @media print {
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        box-sizing: border-box !important;
+    }
+    
+    ::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    
+    html {
+        overflow: hidden !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
     }
     
     body {
         margin: 0 !important;
         padding: 0 !important;
-        font-family: Open Sans, sans-serif !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        overflow: hidden !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
     }
     
     .container {
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    .container > h1,
-    .container > textarea,
-    .container > button,
-    .container > .checkbox-container,
-    .container > .progress-container,
-    .container > .dropdown-toggle,
-    .container > .dropdown-content {
         display: none !important;
     }
     
-    .dropdown-toggle,
-    .dropdown-content,
+    #pagesContainer {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    
     .page-wrapper > .dropdown-toggle,
     .page-wrapper > .dropdown-content {
         display: none !important;
     }
     
     .a4-container {
-        width: 100% !important;
-        height: 100vh !important;
+        width: 297mm !important;
+        height: 210mm !important;
         margin: 0 !important;
         padding: 20px !important;
         border: none !important;
         box-sizing: border-box !important;
-        page-break-before: always;
-        page-break-after: always;
-        page-break-inside: avoid;
+        page-break-before: always !important;
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
         position: relative !important;
         display: block !important;
+        overflow: hidden !important;
+        transform: none !important;
+        background: white !important;
     }
     
     .a4-container:first-of-type {
-        page-break-before: avoid;
+        page-break-before: avoid !important;
     }
     
     .a4-container:last-of-type {
-        page-break-after: avoid;
+        page-break-after: avoid !important;
     }
     
     .logo {
@@ -337,6 +612,7 @@ td a {
         top: 20px !important;
         left: 20px !important;
         width: 100px !important;
+        height: auto !important;
         display: block !important;
     }
     
@@ -349,6 +625,7 @@ td a {
         font-weight: bold !important;
         letter-spacing: 0.05rem !important;
         display: block !important;
+        white-space: nowrap !important;
     }
     
     .contact-info {
@@ -358,6 +635,7 @@ td a {
         text-align: right !important;
         font-size: 8pt !important;
         display: block !important;
+        line-height: 1.2 !important;
     }
     
     .table-wrapper {
@@ -370,7 +648,9 @@ td a {
         border-bottom: 1px solid black !important;
         border-left: 1px solid black !important;
         display: flex !important;
-        overflow: visible !important;
+        overflow: hidden !important;
+        height: auto !important;
+        max-height: none !important;
     }
     
     .section-table {
@@ -379,6 +659,8 @@ td a {
         table-layout: fixed !important;
         height: 100% !important;
         display: table !important;
+        width: auto !important;
+        overflow: hidden !important;
     }
     
     .section-table:not(:first-child) {
@@ -395,22 +677,31 @@ td a {
     
     .section-table tr {
         display: table-row !important;
-        page-break-inside: avoid;
+        page-break-inside: avoid !important;
+        height: auto !important;
     }
     
     .section-table tr[style*="display: none"] {
         display: none !important;
     }
     
-    .section-table th, .section-table td {
+    .section-table th, 
+    .section-table td {
         display: table-cell !important;
         padding: 2px !important;
         border-right: 1px solid black !important;
         text-align: center !important;
         overflow: hidden !important;
+        line-height: 1.1 !important;
+        vertical-align: middle !important;
+        word-wrap: break-word !important;
+        hyphens: auto !important;
+        max-width: none !important;
+        width: auto !important;
     }
     
-    .section-table th:last-child, .section-table td:last-child {
+    .section-table th:last-child, 
+    .section-table td:last-child {
         border-right: none !important;
     }
     
@@ -419,9 +710,11 @@ td a {
         border-right: 1px solid black !important;
     }
     
-    .section-table td:first-child, .section-table th {
+    .section-table td:first-child, 
+    .section-table th {
         background-color: black !important;
         color: white !important;
+        font-weight: bold !important;
     }
     
     .section-table th a {
@@ -432,6 +725,9 @@ td a {
     .section-table .group-row th {
         background-color: #707070 !important;
         color: white !important;
+        line-height: 1.2 !important;
+        padding: 2px !important;
+        vertical-align: middle !important;
     }
     
     .section-table .group-row th:first-child {
@@ -451,6 +747,7 @@ td a {
         display: block !important;
         margin: 0 auto !important;
         max-width: 100% !important;
+        width: auto !important;
         height: auto !important;
         object-fit: contain !important;
     }
@@ -463,6 +760,22 @@ td a {
         vertical-align: middle !important;
     }
     
+    .cell-value {
+        display: block !important;
+        margin-bottom: 1px !important;
+        line-height: 1.1 !important;
+    }
+    
+    .cell-value:last-child {
+        margin-bottom: 0 !important;
+    }
+    
+    .cell-value strong {
+        font-weight: bold !important;
+        color: #000 !important;
+        display: inline !important;
+    }
+    
     .footer {
         position: absolute !important;
         bottom: 20px !important;
@@ -471,6 +784,12 @@ td a {
         text-align: center !important;
         font-size: 8px !important;
         display: block !important;
+        line-height: 1.2 !important;
+    }
+    
+    @page {
+        size: A4 landscape !important;
+        margin: 0 !important;
     }
 }
     </style>
@@ -478,8 +797,10 @@ td a {
 <body>
     <div class="container">
         <h1>PRODUCT OVERVIEW GUIDE GENERATOR</h1>
-        <textarea id="urlInput" placeholder="Paste URLs here, one per line">
-
+        
+        <div class="input-section">
+            <label for="urlInput">PASTE URLS HERE (ONE PER LINE):</label>
+            <textarea id="urlInput" placeholder="Paste URLs here, one per line">
 TITLE - ARTICULATING WALL MOUNT GUIDE
 https://www.futureautomation.co.uk/Product/Details/PS32
 https://www.futureautomation.co.uk/Product/Details/PS40
@@ -616,19 +937,26 @@ https://www.futureautomation.co.uk/Product/Details/CHR-MO
 https://www.futureautomation.co.uk/Product/Details/CHR-MO-DDP
 https://www.futureautomation.co.uk/Product/Details/CHRS-MO
 https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
+
+</textarea>
+        </div>
         
-        </textarea>
-        <button id="generateButton" class='styled-button'>GENERATE PAGE ></button>
-        <button type="button" onclick="printPage()" class='styled-button'>EXPORT AS PDF</button>
+		<button class="primary-btn" id="generateButton">
+			<i class="fas fa-cogs"></i> Generate Guide
+		</button>
+		<button class="secondary-btn" onclick="printPage()">
+			<i class="fas fa-download"></i> Export as PDF
+		</button>
         <div class="checkbox-container">
             <input type="checkbox" id="splitProductCodes" name="splitProductCodes">
             <label for="splitProductCodes">Split All Product Codes</label>
         </div>
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div id="pagesContainer"></div>
+        
+        <div id="status"></div>
     </div>
+    
+    <div id="pagesContainer"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
 const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
@@ -637,6 +965,34 @@ const allSpecifications = {};
 let previousUrls = [];
 let toggleStates = {};
 let lastUrlInput = '';
+
+function showStatus(message, type) {
+    const status = document.getElementById('status');
+    status.innerHTML = `
+        <div class="status ${type}">
+            ${message}
+            ${type === 'loading' ? '<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>' : ''}
+        </div>
+    `;
+}
+
+function updateProgress(current, total, message = 'Processing...') {
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) {
+        const percentage = (current / total) * 100;
+        progressFill.style.width = `${percentage}%`;
+    }
+    
+    const status = document.getElementById('status');
+    if (status) {
+        status.innerHTML = `
+            <div class="status loading">
+                ${message} (${current + 1}/${total})
+                <div class="progress-bar"><div class="progress-fill" style="width: ${(current / total) * 100}%"></div></div>
+            </div>
+        `;
+    }
+}
 
 function extractCommonBaseName(productNames) {
     if (productNames.length === 1) {
@@ -809,15 +1165,6 @@ function selectCompactValue(values, spec, productName) {
         return [{ value: lastValue, subcode: productName }];
     }
     return values;
-}
-
-function adjustTitleFontSize(titleElement, text) {
-    const minFontSize = 12;
-    const maxFontSize = 20;
-    const baseLength = 20;
-    const scaleFactor = Math.min(1, baseLength / text.length);
-    const fontSize = minFontSize + (maxFontSize - minFontSize) * scaleFactor;
-    titleElement.style.fontSize = `${fontSize}pt`;
 }
 
 function updateRowColors(table) {
@@ -1020,6 +1367,14 @@ function setConsistentImageHeights(pageIndex) {
                 }
             });
         }
+        
+        const groupRow = table.querySelector('.group-row');
+        if (groupRow) {
+            groupRow.style.height = '';
+            groupRow.querySelectorAll('th').forEach(th => {
+                th.style.height = '';
+            });
+        }
     });
     
     tableWrapper.offsetHeight;
@@ -1133,11 +1488,136 @@ function setConsistentImageHeights(pageIndex) {
     }
 }
 
+function adjustFontSizeBasedOnTableContent(pageIndex) {
+    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
+    if (!tableWrapper) return;
+    
+    const tables = tableWrapper.querySelectorAll('.section-table');
+    if (tables.length === 0) return;
+    
+    const maxFontSize = 12;
+    const minFontSize = 5;
+    let globalOptimalFontSize = maxFontSize;
+    
+    tables.forEach(table => {
+        const cells = table.querySelectorAll('th, td');
+        cells.forEach(cell => cell.style.fontSize = '');
+    });
+    
+    tableWrapper.offsetHeight;
+    
+    tables.forEach(table => {
+        const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+        if (visibleRows.length === 0) return;
+        
+        let tableOptimalFontSize = maxFontSize;
+        
+        visibleRows.forEach(row => {
+            const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
+                const style = window.getComputedStyle(cell);
+                return cell.style.display !== 'none' && style.visibility !== 'hidden';
+            });
+            
+            visibleCells.forEach(cell => {
+                if (cell.querySelector('img')) return;
+                
+                const computedStyle = window.getComputedStyle(cell);
+                const paddingTop = parseFloat(computedStyle.paddingTop);
+                const paddingBottom = parseFloat(computedStyle.paddingBottom);
+                const paddingLeft = parseFloat(computedStyle.paddingLeft);
+                const paddingRight = parseFloat(computedStyle.paddingRight);
+                const cellHeight = cell.clientHeight - paddingTop - paddingBottom;
+                const cellWidth = cell.clientWidth - paddingLeft - paddingRight;
+                
+                if (cellHeight <= 0 || cellWidth <= 0 || !cell.textContent.trim()) return;
+                
+                cell.style.fontSize = `${maxFontSize}px`;
+                const textHeight = cell.scrollHeight;
+                const textWidth = cell.scrollWidth;
+                const heightRatio = cellHeight / textHeight;
+                const widthRatio = cellWidth / textWidth;
+                const scaleFactor = Math.min(heightRatio, widthRatio);
+                let cellFontSize = Math.floor(maxFontSize * scaleFactor);
+                cellFontSize = Math.max(minFontSize, Math.min(cellFontSize, maxFontSize));
+                tableOptimalFontSize = Math.min(tableOptimalFontSize, cellFontSize);
+            });
+        });
+        
+        globalOptimalFontSize = Math.min(globalOptimalFontSize, tableOptimalFontSize);
+    });
+    
+    const totalVisibleRows = Array.from(tables).reduce((count, table) => {
+        return count + Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none').length;
+    }, 0);
+    
+    if (totalVisibleRows > 30) {
+        const rowPenalty = Math.max(0.5, 1 - (totalVisibleRows - 30) * 0.02);
+        globalOptimalFontSize = Math.floor(globalOptimalFontSize * rowPenalty);
+    }
+    
+    globalOptimalFontSize = Math.max(minFontSize, globalOptimalFontSize);
+    
+    tables.forEach(table => {
+        const cells = table.querySelectorAll('th, td');
+        cells.forEach(cell => cell.style.fontSize = `${globalOptimalFontSize}px`);
+        
+        const groupRow = table.querySelector('.group-row');
+        const specRow = table.querySelector('thead tr:not(.group-row)');
+        if (groupRow && specRow) {
+            const targetHeight = `${Math.max(11, specRow.offsetHeight - 3)}px`;
+            groupRow.style.setProperty('height', targetHeight, 'important');
+            groupRow.style.setProperty('max-height', targetHeight, 'important');
+            groupRow.style.setProperty('min-height', targetHeight, 'important');
+            groupRow.querySelectorAll('th').forEach(th => {
+                th.style.setProperty('height', targetHeight, 'important');
+                th.style.setProperty('max-height', targetHeight, 'important');
+                th.style.setProperty('min-height', targetHeight, 'important');
+                th.style.setProperty('line-height', targetHeight, 'important');
+                th.style.setProperty('padding', '0', 'important');
+                th.style.setProperty('vertical-align', 'middle', 'important');
+                th.style.setProperty('overflow', 'hidden', 'important');
+            });
+        }
+        
+        updateRowColors(table);
+    });
+    
+    setTimeout(() => {
+        const wrapperHeight = tableWrapper.clientHeight;
+        const totalTableHeight = Array.from(tables).reduce((sum, table) => {
+            const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+            return sum + visibleRows.reduce((rowSum, row) => {
+                if (row.classList.contains('group-row')) {
+                    return rowSum;
+                }
+                return rowSum + row.offsetHeight;
+            }, 0);
+        }, 0);
+        
+        if (totalTableHeight > wrapperHeight * 0.98) {
+            const heightRatio = (wrapperHeight * 0.95) / totalTableHeight;
+            const newFontSize = Math.max(minFontSize, Math.floor(globalOptimalFontSize * heightRatio));
+            
+            if (newFontSize < globalOptimalFontSize) {
+                tables.forEach(table => {
+                    const cells = table.querySelectorAll('th, td');
+                    cells.forEach(cell => cell.style.fontSize = `${newFontSize}px`);
+                });
+            }
+        }
+    }, 50);
+}
+
 async function updateTables() {
     const urlInput = document.getElementById('urlInput').value;
     const splitProductCodes = document.getElementById('splitProductCodes').checked;
     const lines = urlInput.split('\n').map(line => line.trim()).filter(line => line !== '');
     
+    if (lines.length === 0) {
+        showStatus('Please enter some URLs to process', 'error');
+        return;
+    }
+
     const pages = [];
     let currentPage = null;
     
@@ -1220,10 +1700,7 @@ async function updateTables() {
         pages.push({ title: '', sections: [{ groups: [], urls: [] }] });
     }
 
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
-    progressContainer.style.display = 'block';
-    progressBar.style.width = '0%';
+    showStatus('Starting to process URLs...', 'loading');
     
     const pagesContainer = document.getElementById('pagesContainer');
     pagesContainer.innerHTML = '';
@@ -1247,8 +1724,7 @@ async function updateTables() {
                     let productData = await scrapeProductData(url);
                     productDataMap.set(url, productData);
                     processedUrls++;
-                    const progressPercentage = (processedUrls / totalUrls) * 100;
-                    progressBar.style.width = `${progressPercentage}%`;
+                    updateProgress(processedUrls - 1, totalUrls, 'Fetching product data...');
                     await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
                 }
             }
@@ -1292,12 +1768,9 @@ async function updateTables() {
                 Registered Office: Unit 2 Kimpton Enterprise Park, Claggy Road, Kimpton, Herts, SG4 8HP
             </div>
         `;
+        
         pageWrapper.appendChild(a4Container);
         pagesContainer.appendChild(pageWrapper);
-        
-        const titleElement = document.getElementById(`pageTitle${pageIndex}`);
-        if (page.title) adjustTitleFontSize(titleElement, page.title);
-        else titleElement.style.fontSize = '12pt';
         
         const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
         const sections = [];
@@ -1488,7 +1961,7 @@ async function updateTables() {
                 
                 const button = document.createElement('button');
                 button.textContent = spec;
-                button.classList.add('toggle-button');
+                button.classList.add('spec-button');
                 button.dataset.pageIndex = pageIndex;
                 button.dataset.spec = spec;
                 button.dataset.sectionIndex = sectionIndex;
@@ -1512,146 +1985,42 @@ async function updateTables() {
         
         window.pageSections[pageIndex] = sections;
         
-        setConsistentImageHeights(pageIndex);
-        adjustFontSizeBasedOnTableContent(pageIndex);
+        setTimeout(() => {
+            setConsistentImageHeights(pageIndex);
+            adjustFontSizeBasedOnTableContent(pageIndex);
+        }, 10);
     }
     
-    progressContainer.style.display = 'none';
+    showStatus(`Successfully generated ${pages.length} page(s) with ${totalUrls} products processed`, 'success');
     document.getElementById('generateButton').disabled = true;
 }
 
-function adjustFontSizeBasedOnTableContent(pageIndex) {
-    const tableWrapper = document.getElementById(`tableWrapper${pageIndex}`);
-    if (!tableWrapper) return;
-    
-    const tables = tableWrapper.querySelectorAll('.section-table');
-    if (tables.length === 0) return;
-    
-    const maxFontSize = 12;
-    const minFontSize = 5;
-    let globalOptimalFontSize = maxFontSize;
-    
-    tables.forEach(table => {
-        const cells = table.querySelectorAll('th, td');
-        cells.forEach(cell => cell.style.fontSize = '');
-    });
-    
-    tableWrapper.offsetHeight;
-    
-    tables.forEach(table => {
-        const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
-        if (visibleRows.length === 0) return;
-        
-        let tableOptimalFontSize = maxFontSize;
-        
-        visibleRows.forEach(row => {
-            const visibleCells = Array.from(row.querySelectorAll('th, td')).filter(cell => {
-                const style = window.getComputedStyle(cell);
-                return cell.style.display !== 'none' && style.visibility !== 'hidden';
-            });
-            
-            visibleCells.forEach(cell => {
-                if (cell.querySelector('img')) return;
-                
-                const computedStyle = window.getComputedStyle(cell);
-                const paddingTop = parseFloat(computedStyle.paddingTop);
-                const paddingBottom = parseFloat(computedStyle.paddingBottom);
-                const paddingLeft = parseFloat(computedStyle.paddingLeft);
-                const paddingRight = parseFloat(computedStyle.paddingRight);
-                const cellHeight = cell.clientHeight - paddingTop - paddingBottom;
-                const cellWidth = cell.clientWidth - paddingLeft - paddingRight;
-                
-                if (cellHeight <= 0 || cellWidth <= 0 || !cell.textContent.trim()) return;
-                
-                cell.style.fontSize = `${maxFontSize}px`;
-                const textHeight = cell.scrollHeight;
-                const textWidth = cell.scrollWidth;
-                const heightRatio = cellHeight / textHeight;
-                const widthRatio = cellWidth / textWidth;
-                const scaleFactor = Math.min(heightRatio, widthRatio);
-                let cellFontSize = Math.floor(maxFontSize * scaleFactor);
-                cellFontSize = Math.max(minFontSize, Math.min(cellFontSize, maxFontSize));
-                tableOptimalFontSize = Math.min(tableOptimalFontSize, cellFontSize);
-            });
-        });
-        
-        globalOptimalFontSize = Math.min(globalOptimalFontSize, tableOptimalFontSize);
-    });
-    
-    const totalVisibleRows = Array.from(tables).reduce((count, table) => {
-        return count + Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none').length;
-    }, 0);
-    
-    if (totalVisibleRows > 30) {
-        const rowPenalty = Math.max(0.5, 1 - (totalVisibleRows - 30) * 0.02);
-        globalOptimalFontSize = Math.floor(globalOptimalFontSize * rowPenalty);
-    }
-    
-    globalOptimalFontSize = Math.max(minFontSize, globalOptimalFontSize);
-    
-    tables.forEach(table => {
-        const cells = table.querySelectorAll('th, td');
-        cells.forEach(cell => cell.style.fontSize = `${globalOptimalFontSize}px`);
-        
-        const groupRow = table.querySelector('.group-row');
-        const specRow = table.querySelector('thead tr:not(.group-row)');
-        if (groupRow && specRow) {
-            groupRow.style.height = `${specRow.offsetHeight}px`;
-        }
-        
-        updateRowColors(table);
-    });
-    
-    setTimeout(() => {
-        const wrapperHeight = tableWrapper.clientHeight;
-        const totalTableHeight = Array.from(tables).reduce((sum, table) => {
-            const visibleRows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
-            return sum + visibleRows.reduce((rowSum, row) => rowSum + row.offsetHeight, 0);
-        }, 0);
-        
-        if (totalTableHeight > wrapperHeight * 0.98) {
-            const heightRatio = (wrapperHeight * 0.95) / totalTableHeight;
-            const newFontSize = Math.max(minFontSize, Math.floor(globalOptimalFontSize * heightRatio));
-            
-            if (newFontSize < globalOptimalFontSize) {
-                tables.forEach(table => {
-                    const cells = table.querySelectorAll('th, td');
-                    cells.forEach(cell => cell.style.fontSize = `${newFontSize}px`);
-                });
-            }
-        }
-    }, 50);
-}
-
-function setupTableObservers() {
-    const observer = new MutationObserver(() => {
-        const tables = document.querySelectorAll('table[id^="section"]');
-        tables.forEach(table => {
-            const pageIndex = parseInt(table.id.match(/table(\d+)$/)[1]);
-            adjustFontSizeBasedOnTableContent(pageIndex);
-        });
-    });
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        observer.observe(document.body, { childList: true, subtree: true });
-    });
+function adjustTitleFontSize(titleElement, text) {
+    const minFontSize = 14;
+    const maxFontSize = 24;
+    const baseLength = 15;
+    const scaleFactor = Math.min(1, baseLength / text.length);
+    const fontSize = minFontSize + (maxFontSize - minFontSize) * scaleFactor;
+    titleElement.style.fontSize = `${fontSize}pt`;
+    console.log(`Title: "${text}" (${text.length} chars) -> ${fontSize}pt`);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupTableObservers();
     document.getElementById('generateButton').addEventListener('click', () => {
         updateTables();
         lastUrlInput = document.getElementById('urlInput').value;
         document.getElementById('generateButton').disabled = true;
     });
+    
     document.getElementById('urlInput').addEventListener('input', () => {
         const currentUrlInput = document.getElementById('urlInput').value;
         document.getElementById('generateButton').disabled = currentUrlInput === lastUrlInput;
     });
+    
     document.getElementById('splitProductCodes').addEventListener('change', () => {
         document.getElementById('generateButton').disabled = false;
     });
 });
-</script>
+    </script>
 </body>
 </html>
