@@ -6,6 +6,11 @@
     <title>Product Overview Guide Generator</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Overview Guide Generator</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
 * {
     box-sizing: border-box;
 }
@@ -81,7 +86,7 @@ button {
     flex: 1;
     min-width: 140px;
     padding: 15px 20px;
-    border: 1px solid #000000;
+    border: 2px solid #000000;
     border-radius: 25px;
     font-size: 14px;
     font-weight: 600;
@@ -651,16 +656,17 @@ td a {
         overflow: hidden !important;
         height: auto !important;
         max-height: none !important;
+        width: 287mm !important;
     }
     
     .section-table {
-        flex: 1 !important;
         border-collapse: collapse !important;
         table-layout: fixed !important;
         height: 100% !important;
         display: table !important;
-        width: auto !important;
         overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     .section-table:not(:first-child) {
@@ -696,8 +702,6 @@ td a {
         vertical-align: middle !important;
         word-wrap: break-word !important;
         hyphens: auto !important;
-        max-width: none !important;
-        width: auto !important;
     }
     
     .section-table th:last-child, 
