@@ -981,9 +981,11 @@ https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
 const delayBetweenRequests = 400;
 const proxyTimeoutMs = 12000;
 const corsProxies = [
+    { name: 'corsproxy-io', build: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`, type: 'text' },
     { name: 'codetabs', build: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, type: 'text' },
     { name: 'allorigins-raw', build: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, type: 'text' },
     { name: 'allorigins-get', build: u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, type: 'json' },
+    { name: 'thingproxy', build: u => `https://thingproxy.freeboard.io/fetch/${u}`, type: 'text' },
     { name: 'cors-lol', build: u => `https://api.cors.lol/?url=${encodeURIComponent(u)}`, type: 'text' }
 ];
 const allSpecifications = {};
