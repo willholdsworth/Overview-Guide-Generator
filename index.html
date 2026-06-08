@@ -979,6 +979,12 @@ https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
 const delayBetweenRequests = 200;
+const corsProxies = [
+    { name: 'cors-lol', build: u => `https://api.cors.lol/?url=${encodeURIComponent(u)}`, type: 'text' },
+    { name: 'codetabs', build: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, type: 'text' },
+    { name: 'allorigins-raw', build: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, type: 'text' },
+    { name: 'allorigins-get', build: u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, type: 'json' }
+];
 const allSpecifications = {};
 let previousUrls = [];
 let toggleStates = {};
@@ -1067,15 +1073,30 @@ function printPage() {
     window.print();
 }
 
-async function fetchHTML(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) return '';
-        return await response.text();
-    } catch (error) {
-        console.error(`Error fetching URL ${url}:`, error);
-        return '';
+async function fetchViaProxy(proxy, url) {
+    const response = await fetch(proxy.build(url));
+    if (!response.ok) return '';
+    if (proxy.type === 'json') {
+        const data = await response.json();
+        return data.contents || '';
     }
+    return await response.text();
+}
+
+async function fetchHTML(url) {
+    for (const proxy of corsProxies) {
+        try {
+            const html = await fetchViaProxy(proxy, url);
+            if (html && html.includes('PageProductID')) {
+                console.log(`Fetched ${url} via ${proxy.name}`);
+                return html;
+            }
+        } catch (error) {
+            console.error(`Proxy ${proxy.name} failed for ${url}:`, error);
+        }
+    }
+    console.error(`All proxies failed for ${url}`);
+    return '';
 }
 
 function cleanTechnicalSpecificationTable(table) {
