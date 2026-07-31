@@ -963,8 +963,11 @@ https://www.futureautomation.co.uk/Product/Details/CHRS-MO-DDP
 		<button class="primary-btn" id="generateButton">
 			<i class="fas fa-cogs"></i> Generate Guide
 		</button>
-		<button class="secondary-btn" onclick="printPage()">
-			<i class="fas fa-download"></i> Export as PDF
+		<button class="secondary-btn" id="exportIndividualButton" onclick="exportIndividualPages()">
+			<i class="fas fa-download"></i> Export Individual Pages
+		</button>
+		<button class="secondary-btn" id="exportAllButton" onclick="exportAllPages()">
+			<i class="fas fa-file-pdf"></i> Export All
 		</button>
         <div class="checkbox-container">
             <input type="checkbox" id="splitProductCodes" name="splitProductCodes">
@@ -1073,8 +1076,96 @@ function findLongestCommonSuffix(strings) {
     return reversedPrefix.split('').reverse().join('');
 }
 
-function printPage() {
+let exportCancelled = false;
+const originalDocumentTitle = document.title;
+
+function handleExportEscapeKey(e) {
+    if (e.key === 'Escape') {
+        exportCancelled = true;
+    }
+}
+
+function getPageTitleElement(wrapper) {
+    return wrapper.querySelector('.title');
+}
+
+function sanitizeForFilename(name) {
+    return name.replace(/[\\/:*?"<>|]/g, '').trim();
+}
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function exportIndividualPages() {
+    const wrappers = Array.from(document.querySelectorAll('.page-wrapper'));
+    if (wrappers.length === 0) {
+        showStatus('No pages to export. Generate a guide first.', 'error');
+        return;
+    }
+
+    const year = new Date().getFullYear();
+    exportCancelled = false;
+    document.addEventListener('keydown', handleExportEscapeKey);
+
+    const individualButton = document.getElementById('exportIndividualButton');
+    const allButton = document.getElementById('exportAllButton');
+    individualButton.disabled = true;
+    allButton.disabled = true;
+
+    for (let i = 0; i < wrappers.length; i++) {
+        if (exportCancelled) {
+            showStatus('Export cancelled.', 'error');
+            break;
+        }
+
+        wrappers.forEach((w, idx) => {
+            w.style.display = idx === i ? '' : 'none';
+        });
+
+        const titleEl = getPageTitleElement(wrappers[i]);
+        const originalTitleText = titleEl ? titleEl.textContent : `Page ${i + 1}`;
+        const titleWithYear = `${originalTitleText.trim()} - ${year}`;
+
+        document.title = sanitizeForFilename(titleWithYear);
+
+        showStatus(`Exporting page ${i + 1} of ${wrappers.length}: ${titleWithYear}. Press ESC to cancel remaining exports.`, 'loading');
+
+        await wait(150);
+        window.print();
+
+        await wait(250);
+    }
+
+    wrappers.forEach(w => { w.style.display = ''; });
+    document.title = originalDocumentTitle;
+    document.removeEventListener('keydown', handleExportEscapeKey);
+
+    individualButton.disabled = false;
+    allButton.disabled = false;
+
+    if (!exportCancelled) {
+        showStatus(`Successfully exported ${wrappers.length} page(s).`, 'success');
+    }
+}
+
+async function exportAllPages() {
+    const wrappers = Array.from(document.querySelectorAll('.page-wrapper'));
+    if (wrappers.length === 0) {
+        showStatus('No pages to export. Generate a guide first.', 'error');
+        return;
+    }
+
+    const year = new Date().getFullYear();
+    const titleEls = wrappers.map(getPageTitleElement);
+    const firstTitleText = titleEls[0] ? titleEls[0].textContent.trim() : 'Product Guide';
+
+    document.title = sanitizeForFilename(`${firstTitleText} - ${year}`);
+
+    await wait(150);
     window.print();
+
+    document.title = originalDocumentTitle;
 }
 
 async function fetchViaProxy(proxy, url) {
