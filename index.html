@@ -1759,19 +1759,27 @@ async function updateTables() {
         const page = pages[pageIndex];
         const productDataMap = new Map();
         
-        for (const section of page.sections) {
+        const uniqueUrls = new Set();
+        page.sections.forEach(section => {
             const effectiveUrls = section.groups.length > 0 ? section.groups.flatMap(g => g.urls) : section.urls;
-            
-            for (const { url, shouldSplit, splitIndex, mergeId } of effectiveUrls) {
-                if (!productDataMap.has(url)) {
-                    let productData = await scrapeProductData(url);
-                    productDataMap.set(url, productData);
-                    processedUrls++;
-                    updateProgress(processedUrls - 1, totalUrls, 'Fetching product data...');
-                    await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
-                }
+            effectiveUrls.forEach(({ url }) => uniqueUrls.add(url));
+        });
+        
+        const maxConcurrent = 6;
+        const urlQueue = Array.from(uniqueUrls);
+        
+        async function fetchNext() {
+            while (urlQueue.length > 0) {
+                const url = urlQueue.shift();
+                const productData = await scrapeProductData(url);
+                productDataMap.set(url, productData);
+                processedUrls++;
+                updateProgress(processedUrls - 1, totalUrls, 'Fetching product data...');
             }
         }
+        
+        const workers = Array.from({ length: Math.min(maxConcurrent, urlQueue.length) }, () => fetchNext());
+        await Promise.all(workers);
         
         const pageWrapper = document.createElement('div');
         pageWrapper.classList.add('page-wrapper');
@@ -1823,74 +1831,75 @@ async function updateTables() {
             const sectionProducts = [];
             const effectiveUrls = section.groups.length > 0 ? section.groups.flatMap(g => g.urls) : section.urls;
             
-            const mergeGroups = {};
-            const nonMergeUrls = [];
+            const processedMergeIds = new Set();
             
             effectiveUrls.forEach((urlObj) => {
-                if (urlObj.mergeId) {
-                    if (!mergeGroups[urlObj.mergeId]) {
-                        mergeGroups[urlObj.mergeId] = [];
+                const { url, shouldSplit, splitIndex, mergeId } = urlObj;
+                
+                if (mergeId) {
+                    if (processedMergeIds.has(mergeId)) {
+                        return;
                     }
-                    mergeGroups[urlObj.mergeId].push(urlObj);
-                } else {
-                    nonMergeUrls.push(urlObj);
-                }
-            });
-            
-            Object.values(mergeGroups).forEach(mergeGroup => {
-                if (mergeGroup.length === 1) {
-                    nonMergeUrls.push(mergeGroup[0]);
-                    return;
-                }
-                
-                const products = mergeGroup.map(({ url }) => productDataMap.get(url)).filter(Boolean);
-                if (products.length === 0) return;
-                
-                const baseProduct = products[0];
-                const allProductNames = products.map(p => p.productName);
-                const baseName = extractCommonBaseName(allProductNames);
-                
-                const mergedProduct = {
-                    ...baseProduct,
-                    productName: baseName,
-                    shouldSplit: false,
-                    specifications: {},
-                    subcodes: [baseName]
-                };
-                
-                const allSpecs = new Set();
-                products.forEach(product => {
-                    Object.keys(product.specifications).forEach(spec => allSpecs.add(spec));
-                });
-                
-                allSpecs.forEach(spec => {
-                    const allValues = [];
-                    const seenValues = new Set();
+                    processedMergeIds.add(mergeId);
                     
+                    const mergeGroup = effectiveUrls.filter(u => u.mergeId === mergeId);
+                    
+                    if (mergeGroup.length === 1) {
+                        const product = productDataMap.get(mergeGroup[0].url);
+                        if (!product) return;
+                        const productCopy = { ...product, shouldSplit: mergeGroup[0].shouldSplit };
+                        sectionProducts.push(productCopy);
+                        return;
+                    }
+                    
+                    const products = mergeGroup.map(({ url }) => productDataMap.get(url)).filter(Boolean);
+                    if (products.length === 0) return;
+                    
+                    const baseProduct = products[0];
+                    const allProductNames = products.map(p => p.productName);
+                    const baseName = extractCommonBaseName(allProductNames);
+                    
+                    const mergedProduct = {
+                        ...baseProduct,
+                        productName: baseName,
+                        shouldSplit: false,
+                        specifications: {},
+                        subcodes: [baseName]
+                    };
+                    
+                    const allSpecs = new Set();
                     products.forEach(product => {
-                        if (product.specifications[spec] && product.specifications[spec].length > 0) {
-                            product.specifications[spec].forEach(specValue => {
-                                const valueKey = `${specValue.value}|${specValue.subcode}`;
-                                if (!seenValues.has(valueKey)) {
-                                    seenValues.add(valueKey);
-                                    allValues.push({
-                                        value: specValue.value,
-                                        subcode: specValue.subcode
-                                    });
-                                }
-                            });
+                        Object.keys(product.specifications).forEach(spec => allSpecs.add(spec));
+                    });
+                    
+                    allSpecs.forEach(spec => {
+                        const allValues = [];
+                        const seenValues = new Set();
+                        
+                        products.forEach(product => {
+                            if (product.specifications[spec] && product.specifications[spec].length > 0) {
+                                product.specifications[spec].forEach(specValue => {
+                                    const valueKey = `${specValue.value}|${specValue.subcode}`;
+                                    if (!seenValues.has(valueKey)) {
+                                        seenValues.add(valueKey);
+                                        allValues.push({
+                                            value: specValue.value,
+                                            subcode: specValue.subcode
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                        
+                        if (allValues.length > 0) {
+                            mergedProduct.specifications[spec] = allValues;
                         }
                     });
                     
-                    if (allValues.length > 0) {
-                        mergedProduct.specifications[spec] = allValues;
-                    }
-                });
+                    sectionProducts.push(mergedProduct);
+                    return;
+                }
                 
-                sectionProducts.push(mergedProduct);
-            });
-            
-            nonMergeUrls.forEach(({ url, shouldSplit, splitIndex }) => {
                 const product = productDataMap.get(url);
                 if (!product) return;
                 
